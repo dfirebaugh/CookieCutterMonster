@@ -1,0 +1,15 @@
+{
+  "summary": {
+    "title": "Jacob Was Here"
+  },
+  "detail": {
+    "contributors": [],
+    "diagrams": [
+      {
+        "title": "Jacob",
+        "thumbnail": "./public/content/images/thumbnail.jpg",
+        "id": 0
+      }
+    ]
+  }
+}
