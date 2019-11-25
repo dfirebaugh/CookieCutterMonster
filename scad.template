@@ -1,0 +1,42 @@
+
+//Some Params Measured from some other cookie cutters
+height = 15;
+handleWidth = 3.8;
+handleThickness = 2.5;
+width = 1.8;
+
+//A Module for Creating Offsets for Extrusion 
+module thicknessoffset(points, thickness, bidirectional = false) {
+    
+
+    if (bidirectional) {
+        difference() {
+         offset(r = thickness) {
+          polygon(points);
+         }
+         offset(r = -thickness) {
+          polygon(points);
+         }
+       }
+   }
+   else {
+        difference() {
+         offset(r = thickness) {
+          polygon(points);
+         }
+         polygon(points);
+       }  
+   }
+
+}
+
+//TODO: Better Template Library
+cookieOutline=COOKIE_DATA_HERE;
+    
+//The Main Cutter
+render() linear_extrude(height=(height)) thicknessoffset(cookieOutline,thickness=width);
+
+//A Wider Handle/Press Plate
+render() linear_extrude(height=handleThickness) thicknessoffset(cookieOutline,thickness=handleWidth,bidirectional=true);
+
+
