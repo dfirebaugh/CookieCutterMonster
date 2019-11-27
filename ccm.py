@@ -21,8 +21,6 @@ def getPath():
 
         print("Got an Image")
         data = request.files['image']
-        print(imageProcessing.detectEdges(data))
-        print(data)
     return "Hello, World!"
 
 

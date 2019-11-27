@@ -24,8 +24,36 @@ def openScadToSTL(scad):
     return send_file(stl_tmp_file, as_attachment=True)
 
 
+# Scale points to 
+def scalePointsArray(points, size):
+
+    x = points[:, 0]
+    y = points[:, 1]
+    #Get the Min/Max of Each Dimension
+    xmax = np.amax(x)
+    xmin = np.amin(x)
+    ymax = np.amax(y)
+    ymin = np.amin(y)
+    print(xmax)
+    print(xmin)
+    print(ymax)
+    print(ymin)
+
+    scale = size/max(xmax - xmin, ymax - ymin)
+
+    #Offset to 0 and scale
+    x = ((x - xmin)*scale  + 1)
+    y = ((y - ymin)*scale  + 1)
+    newpoints = np.stack((x, y), axis=-1)
+    print(newpoints)
+    return newpoints
+
+
+
+
+
 # Create a Cookie Cutter From a Set of Points
 def createCookieFromPoints(points, size=75):
-    print(points)
-    return openScadToSTL(createOpenScadCookieCutter(points))
+    
+    return openScadToSTL(createOpenScadCookieCutter(scalePointsArray(points, size)))
 
