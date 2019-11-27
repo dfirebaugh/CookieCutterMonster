@@ -4,11 +4,52 @@
         Cookie Cutter Monster
     </head>
     <body>
-        O Snap!
-        <form action="/api/getCookieCutter" method="post"  enctype="multipart/form-data">
-            <input type="file" name="image" accept="image/*">
-            <input type="submit">
-          </form>
+        	
+            <label><strong>Upload File : </strong><input type="file" id="uploadfiles" /></label><br/>
+            <script src="FileSaver.js"></script>
+          <script>
 
+                function download(filename, content) {
+
+                    var blob = new Blob([content], {
+                    type: "text/plain;charset=utf-8"
+                    });
+
+                    saveAs(blob, filename);
+                }
+
+            (function () {
+
+            var uploadfiles = document.querySelector('#uploadfiles');
+            uploadfiles.addEventListener('change', function () {
+                var files = this.files;
+                for(var i=0; i<files.length; i++){
+                    uploadFile(this.files[i]);
+                }
+
+            }, false);
+
+
+            /**
+             * Upload a file
+             * @param file
+             */
+            function uploadFile(file){
+                var url = "api/getCookieCutter";
+                var xhr = new XMLHttpRequest();
+                var fd = new FormData();
+                xhr.open("POST", url, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        // Every thing ok, file uploaded
+                        download("test.stl", xhr.response)
+                        console.log("Hi Im Paul")
+                    }
+                };
+                fd.append('image', file);
+                xhr.send(fd);
+            }
+            }());
+          </script>
     </body>
 </html>

@@ -9,6 +9,11 @@ app = Flask(__name__)
 def uploadPage():
     return render_template('cookie.html') 
 
+
+@app.route('/FileSaver.js')
+def fileSaverPage():
+    return render_template('FileSaver.js') 
+
 @app.route("/api/getPath", methods=['POST'])
 def getPath():
     print(request.files)
