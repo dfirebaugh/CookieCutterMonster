@@ -1,26 +1,29 @@
 from flask import Flask, request, render_template, send_from_directory
 import imageProcessing
 import stlGenerator
+import json
 
 app = Flask(__name__)
 
 
 @app.route('/')
 def uploadPage():
-    return render_template('cookie.html') 
+    return render_template('cookie2.html') 
 
 
 @app.route('/lib/<path:path>')
 def send_js(path):
     return send_from_directory('lib', path)
 
-@app.route("/api/getPath", methods=['POST'])
+@app.route("/api/getCookieCutterFromPath", methods=['POST'])
 def getPath():
-    print(request.files)
-    if 'image' in request.files:
+    if 'points' in request.form and 'size' in request.form:
 
-        print("Got an Image")
-        data = request.files['image']
+        size = int(request.form['size'])
+        points = json.loads(request.form['points'])
+
+        return stlGenerator.createCookieFromPoints(stlGenerator.jsonPoints(points), size)
+
     return "Hello, World!"
 
 

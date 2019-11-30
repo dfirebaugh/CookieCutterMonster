@@ -3,6 +3,7 @@ from flask import send_file
 import os
 import numpy as np
 import tempfile
+import json
 
 np.set_printoptions(threshold=np.inf)
 
@@ -51,4 +52,9 @@ def scalePointsArray(points, size):
 def createCookieFromPoints(points, size=75):
     
     return openScadToSTL(createOpenScadCookieCutter(scalePointsArray(points, size)))
+
+
+def jsonPoints(points):
+    pArray = [[p["x"], p["y"]] for p in points]
+    return np.array(pArray)
 

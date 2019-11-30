@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Cookie Cutter Monster</title>
+</head>
+<body>
+<p id="status">loading libraries...</p>
+<div>
+    <div class="slidecontainer">
+        <p>Cookie Cutter Size range (2in - 4in):</p>
+        <input type="range" min="50" max="100" value="75" class="slider" id="cookieSize">
+    </div>
+  <div class="inputoutput">
+    <img id="imageSrc" alt="No Image" hidden=true/>
+    <div class="caption">Select Base Image<input type="file" id="fileInput" name="file" /></div>
+  </div>
+  <div class="inputoutput">
+    <canvas id="canvasOutput" ></canvas>
+  </div>
+</div>
+<script type="text/javascript">
+
+
+function getCookieSize() {
+        return document.getElementById('cookieSize').value;
+  }
+
+  //https://stackoverflow.com/questions/609530/download-textarea-contents-as-a-file-using-only-javascript-no-server-side
+  function saveTextAsFile(textToWrite, fileNameToSaveAs)
+    {
+    	var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'}); 
+    	var downloadLink = document.createElement("a");
+    	downloadLink.download = fileNameToSaveAs;
+    	downloadLink.innerHTML = "Download File";
+    	if (window.webkitURL != null)
+    	{
+    		// Chrome allows the link to be clicked
+    		// without actually adding it to the DOM.
+    		downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+    	}
+    	else
+    	{
+    		// Firefox requires the link to be added to the DOM
+    		// before it can be clicked.
+    		downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+    		downloadLink.onclick = destroyClickedElement;
+    		downloadLink.style.display = "none";
+    		document.body.appendChild(downloadLink);
+    	}
+    
+    	downloadLink.click();
+    }
+
+  /**
+   * Generate Cookie Cutter
+   * @param pointsArray
+   */
+    function generateSTL(points, filename){
+      var url = "api/getCookieCutterFromPath";
+      var xhr = new XMLHttpRequest();
+      var fd = new FormData();
+      xhr.open("POST", url, true);
+      xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+              // Every thing ok, file uploaded
+              saveTextAsFile(xhr.response, filename)
+          }
+      };
+      fd.append('points', JSON.stringify(points));
+      fd.append('size', getCookieSize())
+      xhr.send(fd);
+  }
+
+
+let imgElement = document.getElementById('imageSrc');
+let inputElement = document.getElementById('fileInput');
+inputElement.addEventListener('change', (e) => {
+  imgElement.src = URL.createObjectURL(e.target.files[0]);
+}, false);
+imgElement.onload = function() {
+let src = cv.imread(imgElement);
+let dst = cv.imread(imgElement);
+cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
+cv.threshold(src, src, 120, 200, cv.THRESH_BINARY);
+cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
+cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
+
+let contours = new cv.MatVector();
+let hierarchy = new cv.Mat();
+// You can try more different parameters
+cv.findContours(src, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+let largestContour =  0
+let maxArea =  0.0
+
+let boundaryCountourAreaCutoff = (src.cols * src.rows) * .90 // If an Area is 98% of the entire image is probably the bounday
+
+// draw contours with random Scalar
+for (let i = 0; i < contours.size(); ++i) {
+    let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
+                              Math.round(Math.random() * 255));
+    
+    let cnt = contours.get(i);
+    let area = cv.contourArea(cnt, false);
+    
+    if (area < boundaryCountourAreaCutoff && area*1.0 > maxArea*1.0) {
+        largestContour = i
+        maxArea = area
+        
+    }
+
+}
+
+
+cv.drawContours(dst, contours, largestContour, new cv.Scalar(255,0,0,255), 2, cv.LINE_8, hierarchy, 100);
+
+let cnt = contours.get(largestContour);
+
+
+var cPoints=[]
+for (let i = 0; i < cnt.rows; i++) {
+    cPoints.push({x:cnt.data32S[i*2],y:cnt.data32S[i*2+1]});   
+}
+cv.imshow('canvasOutput', dst);
+src.delete(); dst.delete(); contours.delete(); hierarchy.delete();
+
+generateSTL(cPoints, "cookie.stl")
+
+
+};
+function onOpenCvReady() {
+  document.getElementById('status').hidden = true;
+}
+</script>
+<script async src="lib/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+</body>
+</html>
