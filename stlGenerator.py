@@ -34,10 +34,6 @@ def scalePointsArray(points, size):
     xmin = np.amin(x)
     ymax = np.amax(y)
     ymin = np.amin(y)
-    print(xmax)
-    print(xmin)
-    print(ymax)
-    print(ymin)
 
     scale = size/max(xmax - xmin, ymax - ymin)
 
@@ -45,7 +41,6 @@ def scalePointsArray(points, size):
     x = ((x - xmin)*scale  + 1)
     y = ((y - ymin)*scale  + 1)
     newpoints = np.stack((x, y), axis=-1)
-    print(newpoints)
     return newpoints
 
 

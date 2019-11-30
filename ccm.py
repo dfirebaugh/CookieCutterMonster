@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_from_directory
 import imageProcessing
 import stlGenerator
 
@@ -10,9 +10,9 @@ def uploadPage():
     return render_template('cookie.html') 
 
 
-@app.route('/FileSaver.js')
-def fileSaverPage():
-    return render_template('FileSaver.js') 
+@app.route('/lib/<path:path>')
+def send_js(path):
+    return send_from_directory('lib', path)
 
 @app.route("/api/getPath", methods=['POST'])
 def getPath():
@@ -31,7 +31,9 @@ def getCookieCutter():
     if 'image' in request.files:
 
         data = request.files['image']
+        size = int(request.form['size'])
+        print(size)
         points = imageProcessing.detectEdges(data)
-        return stlGenerator.createCookieFromPoints(points)
+        return stlGenerator.createCookieFromPoints(points, size)
 
     return "Hello, World!"
