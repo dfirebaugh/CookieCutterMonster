@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Cookie Cutter Monster</title>
+</head>
+<body>
+<p id="status">loading libraries...</p>
+<div>
+    <div class="slidecontainer">
+        <p>Cookie Cutter Size range (2in - 4in):</p>
+        <input type="range" min="50" max="100" value="75" class="slider" id="cookieSize">
+    </div>
+  <div class="inputoutput">
+    <img id="imageSrc" alt="No Image" hidden=true/>
+    <div class="caption">Select Base Image<input type="file" id="fileInput" name="file" /></div>
+  </div>
+  <div class="inputoutput">
+    <canvas id="canvasOutput" ></canvas>
+  </div>
+
+  <button id="exportASCII">Download STL</button> 
+</div>
+<script src="lib/three.min.js"></script>
+<script src="lib/OrbitControls.js"></script>
+<script src="lib/STLExporter.js"></script>
+<script type="text/javascript">
+
+
+var exporter = new THREE.STLExporter();
+var scene = new THREE.Scene();
+var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 2, 1000 );
+
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize( window.innerWidth, window.innerHeight );
+camera.position.z = 150;
+document.body.appendChild( renderer.domElement );
+
+var controls = new THREE.OrbitControls( camera, renderer.domElement );  
+
+
+var buttonExportASCII = document.getElementById( 'exportASCII' );
+buttonExportASCII.addEventListener( 'click', saveTextAsFile );
+        
+function animate() {
+
+requestAnimationFrame( animate );
+
+// required if controls.enableDamping or controls.autoRotate are set to true
+controls.update();
+
+renderer.render( scene, camera );
+
+}
+
+
+      
+// Create a ThreeJS Vector from a OpenCV Contour
+function getThreeVector(cnt, scaleF)
+    {
+
+       var cPoints=[]
+        maxX = 0
+        maxY = 0
+
+        for (let i = 0; i < cnt.rows; i++) {
+            if (cnt.data32S[i*2] > maxX) {
+              maxX = cnt.data32S[i*2]
+            }
+            if (cnt.data32S[i*2 + 1] > maxY) {
+              maxY = cnt.data32S[i*2 + 1]
+            }
+        }
+        scale = scaleF/Math.max(maxX, maxY)
+
+        for (let i = 0; i < cnt.rows; i++) {
+            var a = new THREE.Vector2( cnt.data32S[i*2] * scale, cnt.data32S[i*2 + 1] * scale)
+            
+            cPoints.push(a);   
+        }
+
+        return cPoints;
+}
+
+function OffsetContour(offset, contour) {
+
+let result = [];
+
+offset = new THREE.BufferAttribute(new Float32Array([offset, 0, 0]), 3);
+
+for (let i = 0; i < contour.length; i++) {
+  let v1 = new THREE.Vector2().subVectors(contour[i - 1 < 0 ? contour.length - 1 : i - 1], contour[i]);
+  let v2 = new THREE.Vector2().subVectors(contour[i + 1 == contour.length ? 0 : i + 1], contour[i]);
+  let angle = v2.angle() - v1.angle();
+  let halfAngle = angle * 0.5;
+
+  let hA = halfAngle;
+  let tA = v2.angle() + Math.PI * 0.5;
+
+  let shift = Math.tan(hA - Math.PI * 0.5);
+  let shiftMatrix = new THREE.Matrix4().set(
+         1, 0, 0, 0, 
+    -shift, 1, 0, 0,
+         0, 0, 1, 0,
+         0, 0, 0, 1
+  );
+
+
+  let tempAngle = tA;
+  let rotationMatrix = new THREE.Matrix4().set(
+    Math.cos(tempAngle), -Math.sin(tempAngle), 0, 0,
+    Math.sin(tempAngle),  Math.cos(tempAngle), 0, 0,
+                      0,                    0, 1, 0,
+                      0,                    0, 0, 1
+  );
+
+  let translationMatrix = new THREE.Matrix4().set(
+    1, 0, 0, contour[i].x,
+    0, 1, 0, contour[i].y,
+    0, 0, 1, 0,
+    0, 0, 0, 1,
+  );
+
+  let cloneOffset = offset.clone();
+    shiftMatrix.applyToBufferAttribute(cloneOffset);
+  rotationMatrix.applyToBufferAttribute(cloneOffset);
+  translationMatrix.applyToBufferAttribute(cloneOffset);
+
+  result.push(new THREE.Vector2(cloneOffset.getX(0), cloneOffset.getY(0)));
+}
+
+
+return result;
+}
+
+function getCookieSize() {
+        return document.getElementById('cookieSize').value;
+  }
+
+  //https://stackoverflow.com/questions/609530/download-textarea-contents-as-a-file-using-only-javascript-no-server-side
+  function saveTextAsFile()
+    {
+      var fileNameToSaveAs = "cookie.stl"
+       var textToWrite = exporter.parse( scene );
+
+    	var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'}); 
+    	var downloadLink = document.createElement("a");
+    	downloadLink.download = fileNameToSaveAs;
+    	downloadLink.innerHTML = "Download File";
+    	if (window.webkitURL != null)
+    	{
+    		// Chrome allows the link to be clicked
+    		// without actually adding it to the DOM.
+    		downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+    	}
+    	else
+    	{
+    		// Firefox requires the link to be added to the DOM
+    		// before it can be clicked.
+    		downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+    		downloadLink.onclick = destroyClickedElement;
+    		downloadLink.style.display = "none";
+    		document.body.appendChild(downloadLink);
+    	}
+    
+    	downloadLink.click();
+    }
+
+  /**
+   * Generate Cookie Cutter
+   * @param pointsArray
+   */
+    function generateSTL(cnt, clockwise){
+
+      var extrudeSettings = {
+          steps: 2,
+          depth: 15,
+          bevelEnabled: false
+      };
+
+      height = 15;
+      handleWidth = 3.8;
+      handleThickness = 2.5;
+      width = 1.8;
+
+      var extrudeSettings = {
+          steps: 2,
+          depth: height,
+          bevelEnabled: false
+      };
+
+      var handleExtrudeSettings = {
+          steps: 2,
+          depth: handleThickness,
+          bevelEnabled: false
+      };
+
+
+      if (clockwise) {
+        width = -width
+        handleWidth = -handleWidth
+      }
+      con = getThreeVector(cnt, getCookieSize())
+      offcon = OffsetContour(width, con)
+      offconHandle = OffsetContour(width/2 + handleWidth/2, con)
+      offconHandleInner = OffsetContour(width/2 + -handleWidth/2, con)
+
+      //Generate the Cutter
+      var outShape = new THREE.Shape(offcon);
+      hole = new THREE.Path();
+      hole.fromPoints(con);
+      outShape.holes = [hole];
+
+      //Generate the Handle/Press Plate
+      var handleoutShape = new THREE.Shape(offconHandle);
+      hhole = new THREE.Path();
+      hhole.fromPoints(offconHandleInner);
+      handleoutShape.holes = [hhole];
+
+      //Extrude the Cutter
+      var cgeometry = new THREE.ExtrudeBufferGeometry( outShape, extrudeSettings );
+      var cmaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
+      var cmesh = new THREE.Mesh( cgeometry, cmaterial ) ;
+      cmesh.updateMatrix()
+
+      //Extrude the Handle
+      var hgeometry = new THREE.ExtrudeBufferGeometry( handleoutShape, handleExtrudeSettings );
+      var hmaterial = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
+      var hmesh = new THREE.Mesh( hgeometry, hmaterial ) ;
+      hmesh.updateMatrix()
+
+      // Remove the Old Objects
+      while(scene.children.length > 0){ 
+          scene.remove(scene.children[0]); 
+      }
+
+     scene.add( hmesh );
+     scene.add( cmesh );
+    renderer.render( scene, camera );
+    controls.update();  
+  }
+
+
+let imgElement = document.getElementById('imageSrc');
+let inputElement = document.getElementById('fileInput');
+inputElement.addEventListener('change', (e) => {
+  imgElement.src = URL.createObjectURL(e.target.files[0]);
+}, false);
+
+
+imgElement.onload = function() {
+let src = cv.imread(imgElement);
+let dst = cv.imread(imgElement);
+cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
+cv.threshold(src, src, 120, 200, cv.THRESH_BINARY);
+cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
+cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
+
+let contours = new cv.MatVector();
+let hierarchy = new cv.Mat();
+// You can try more different parameters
+cv.findContours(src, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+let largestContour =  0
+let maxArea =  0.0
+let clockwise = true
+let boundaryCountourAreaCutoff = (src.cols * src.rows) * .90 // If an Area is 98% of the entire image is probably the bounday
+
+// draw contours with random Scalar
+for (let i = 0; i < contours.size(); ++i) {
+    let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
+                              Math.round(Math.random() * 255));
+    
+    let cnt = contours.get(i);
+    let area = cv.contourArea(cnt, true);
+    let cw = true
+    if (area < 0) {
+      cw = false
+      area = -area
+    }
+    if (area < boundaryCountourAreaCutoff && area*1.0 > maxArea*1.0) {
+        largestContour = i
+        maxArea = area
+        clockwise = cw
+        
+    }
+
+}
+
+
+cv.drawContours(dst, contours, largestContour, new cv.Scalar(255,0,0,255), 2, cv.LINE_8, hierarchy, 100);
+
+let cnt = contours.get(largestContour);
+
+
+
+cv.imshow('canvasOutput', dst);
+src.delete(); dst.delete(); contours.delete(); hierarchy.delete();
+
+generateSTL(cnt, clockwise)
+animate();
+
+};
+
+
+
+function onOpenCvReady() {
+  document.getElementById('status').hidden = true;
+}
+</script>
+<script async src="lib/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+
+</body>
+</html>
