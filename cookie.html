@@ -15,12 +15,24 @@
     <img id="imageSrc" alt="No Image" hidden=true/>
     <div class="caption">Select Base Image<input type="file" id="fileInput" name="file" /></div>
   </div>
-  <div class="inputoutput">
-    <canvas id="canvasOutput" ></canvas>
-  </div>
+
+  <div style="width: 60%; float:left">
+      <div class="inputoutput">
+          <canvas id="canvasOutput" ></canvas>
+        </div>
+   </div>
+   
+   <div style="width: 40%; float:right">
+      <div class="threeoutput" id="threeoutput">
+      </div>
+   </div>
+
 
   <button id="exportASCII">Download STL</button> 
 </div>
+
+
+
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
 <script src="lib/STLExporter.js"></script>
@@ -29,12 +41,15 @@
 
 var exporter = new THREE.STLExporter();
 var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 2, 1000 );
+var camera = new THREE.PerspectiveCamera( 75, 200/200, 2, 1000 );
 
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-camera.position.z = 150;
-document.body.appendChild( renderer.domElement );
+var renderer = new THREE.WebGLRenderer({ alpha: true });
+scene.background = new THREE.Color( 0xffffffff );
+
+renderer.setSize( 200,200 );
+camera.position.z = 100;
+
+document.getElementById( 'threeoutput' ).appendChild( renderer.domElement );
 
 var controls = new THREE.OrbitControls( camera, renderer.domElement );  
 
@@ -172,25 +187,20 @@ function getCookieSize() {
    */
     function generateSTL(cnt, clockwise){
 
-      var extrudeSettings = {
-          steps: 2,
-          depth: 15,
-          bevelEnabled: false
-      };
-
+ 
       height = 15;
-      handleWidth = 3.8;
-      handleThickness = 2.5;
-      width = 1.8;
+      handleWidth = 4.5;
+      handleThickness = 2.2;
+      width = 1;
 
       var extrudeSettings = {
-          steps: 2,
+          steps: 10,
           depth: height,
-          bevelEnabled: false
+          bevelEnabled: false,
       };
 
       var handleExtrudeSettings = {
-          steps: 2,
+          steps: 10,
           depth: handleThickness,
           bevelEnabled: false
       };
@@ -205,6 +215,9 @@ function getCookieSize() {
       offconHandle = OffsetContour(width/2 + handleWidth/2, con)
       offconHandleInner = OffsetContour(width/2 + -handleWidth/2, con)
 
+      var material =  new THREE.MeshStandardMaterial({color: 'red'}); 
+      material.color.set(0x000088);  
+
       //Generate the Cutter
       var outShape = new THREE.Shape(offcon);
       hole = new THREE.Path();
@@ -218,24 +231,31 @@ function getCookieSize() {
       handleoutShape.holes = [hhole];
 
       //Extrude the Cutter
-      var cgeometry = new THREE.ExtrudeBufferGeometry( outShape, extrudeSettings );
-      var cmaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-      var cmesh = new THREE.Mesh( cgeometry, cmaterial ) ;
+      var cgeometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( outShape, extrudeSettings ));
+      var cmesh = new THREE.Mesh( cgeometry, material ) ;
       cmesh.updateMatrix()
 
       //Extrude the Handle
-      var hgeometry = new THREE.ExtrudeBufferGeometry( handleoutShape, handleExtrudeSettings );
-      var hmaterial = new THREE.MeshBasicMaterial( { color: 0x0000ff } );
-      var hmesh = new THREE.Mesh( hgeometry, hmaterial ) ;
+      var hgeometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( handleoutShape, handleExtrudeSettings ));
+      var hmesh = new THREE.Mesh( hgeometry, material ) ;
       hmesh.updateMatrix()
+
+      var geom = new THREE.Geometry();
+      geom.mergeMesh(cmesh);
+      geom.mergeMesh(hmesh);
+      geom.mergeVertices(); // optional
 
       // Remove the Old Objects
       while(scene.children.length > 0){ 
           scene.remove(scene.children[0]); 
       }
 
-     scene.add( hmesh );
-     scene.add( cmesh );
+      scene.add(new THREE.Mesh(geom, material));
+
+     var light = new THREE.PointLight( 0xffffff, 2, 200 );
+    light.position.set( 50, 50, 50 );
+    scene.add( light );
+
     renderer.render( scene, camera );
     controls.update();  
   }
@@ -292,7 +312,9 @@ cv.drawContours(dst, contours, largestContour, new cv.Scalar(255,0,0,255), 2, cv
 let cnt = contours.get(largestContour);
 
 
-
+//Limit the Output Size
+let dsize = new cv.Size(300, 300);
+cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
 cv.imshow('canvasOutput', dst);
 src.delete(); dst.delete(); contours.delete(); hierarchy.delete();
 
