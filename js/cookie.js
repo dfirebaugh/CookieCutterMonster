@@ -6,10 +6,16 @@ var camera = new THREE.PerspectiveCamera( 75, 200/200, 2, 1000 );
 var renderer = new THREE.WebGLRenderer({ alpha: true });
 scene.background = new THREE.Color( 0xffffffff );
 
-renderer.setSize( 200,200 );
+var panel3d = document.getElementById( 'threeoutput' )
+var width = panel3d.clientWidth
+var height = 300
+if (width < 300) {
+  height = width
+}
+renderer.setSize( width, height);
 camera.position.z = 100;
 
-document.getElementById( 'threeoutput' ).appendChild( renderer.domElement );
+panel3d.appendChild( renderer.domElement );
 
 var controls = new THREE.OrbitControls( camera, renderer.domElement );  
 

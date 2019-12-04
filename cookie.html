@@ -7,8 +7,8 @@
 
     <title>Cookie Cutter Monster</title>
 
-    <meta name="description" content="Source code generated using layoutit.com">
-    <meta name="author" content="LayoutIt!">
+    <meta name="description" content="Generating Cookie Cutter STL files for 3D printing">
+    <meta name="author" content="SchreiverJ">
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
@@ -21,24 +21,36 @@
 		<div class="col-md-12">
 			<h3>
 				Cookie Cutter Monster
-			</h3>
+      </h3>
+      <p>Generate cookie cutters from images to 3d print!</p>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col-md-8">
 		  <div class="inputoutput">
     <img id="imageSrc" alt="No Image" hidden=true/>
-    <div class="caption">Select Base Image<input type="file" id="fileInput" name="file" /></div>
+       <h5>
+				Select an image to get started!
+      </h5>
+      <p>
+          Try using a cartoon or clipart with a uniform background
+      </p>
+    <div><input type="file" id="fileInput" name="file" /></div>
   </div>
 		 <canvas id="canvasOutput" ></canvas>
 		</div>
 		<div class="col-md-4">
 			<div class="row">
 				<div class="col-md-12">
-				      <div class="threeoutput" id="threeoutput">
+              <h5>
+                3D Preview
+              </h5>
+				      <div class="border border-dark mw-100 mh-100" id="threeoutput" width="300px" height="300px" border-width="thick" border-color="coral" \>
 					  </div>
 				</div>
 			</div>
+			<div class="row">
+          <div class="col-md-12">
 			<form role="form">
 				<div class="form-group">
 					 
@@ -51,6 +63,9 @@
 					Download STL
 				</button>
 			</form>
+    </div>
+
+    </div>
 			<div class="row">
 				<div class="col-md-12">
 				</div>
@@ -66,7 +81,7 @@
 	<script src="js/OrbitControls.js"></script>
 	<script src="js/STLExporter.js"></script>
 	<script src="js/cookie.js"></script>
-	<script async src="lib/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+	<script async src="js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
 	
 	
 	
