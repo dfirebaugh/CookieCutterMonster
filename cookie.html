@@ -12,6 +12,7 @@
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/css/bootstrap-slider.min.css" rel="stylesheet">
 
   </head>
   <body>
@@ -54,10 +55,14 @@
 			<form role="form">
 				<div class="form-group">
 					 
-					<label for="cookieCutterSize">
-						Cookie Cutter Size range (2in - 4in)
-					</label>
-					<input type="range" class="form-control" min="50" max="100" value="75" class="slider" id="cookieSize">
+            <div> <label for="cookieCutterSize">
+						Cookie Cutter Size
+					</label></div>
+          <input id="cookieSize"  type="text"  data-slider-ticks="[2, 2.5, 3, 3.5, 4]" data-slider-ticks-snap-bounds=".1" precision=2 data-slider-ticks-labels='["2in", "2.5in", "3in", "3.5in", "4in"]'/>
+
+       
+
+
 				</div>
 				<button type="submit"  id="exportASCII" class="btn btn-primary">
 					Download STL
@@ -80,7 +85,11 @@
 	<script src="js/three.min.js"></script>
 	<script src="js/OrbitControls.js"></script>
 	<script src="js/STLExporter.js"></script>
-	<script src="js/cookie.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/bootstrap-slider.min.js"></script>
+  <script src="js/cookie.js"></script>
+  
+
+
 	<script async src="js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
 	
 	

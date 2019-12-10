@@ -1,4 +1,13 @@
 
+
+$("#cookieSize").slider({
+  value: 76,
+  ticks: [51, 64, 76, 89, 101],
+  ticks_labels: ['2in', '2.5in', '3in', '3.5in', '4in'],
+  ticks_snap_bounds: 2
+});
+
+var lastCnt; 
 var exporter = new THREE.STLExporter();
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, 200/200, 2, 1000 );
@@ -61,7 +70,8 @@ function getCookieSize() {
   function saveTextAsFile()
     {
       var fileNameToSaveAs = "cookie.stl"
-       var textToWrite = exporter.parse( scene );
+      generateSTL(lastCnt)
+      var textToWrite = exporter.parse( scene );
 
     	var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'}); 
     	var downloadLink = document.createElement("a");
@@ -155,7 +165,7 @@ function getCookieSize() {
    * Generate Cookie Cutter
    * @param pointsArray
    */
-    function generateSTL(cnt, clockwise){
+    function generateSTL(cnt){
 
  
       height = 15;
@@ -272,7 +282,10 @@ cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
 cv.imshow('canvasOutput', dst);
 src.delete(); dst.delete(); contours.delete(); hierarchy.delete();
 
-generateSTL(cnt, clockwise)
+
+
+lastCnt = cnt
+generateSTL(cnt)
 animate();
 
 };
