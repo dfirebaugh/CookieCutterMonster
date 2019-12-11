@@ -7,10 +7,25 @@ $("#cookieSize").slider({
   ticks_snap_bounds: 2
 });
 
+// Add A listner to the Canvas to Change Contours: 
+document.getElementById('canvasOutput').addEventListener('click',function(evt){
+  var celem = document.getElementById('canvasOutput')
+  let rect = celem.getBoundingClientRect(); 
+  //TODO Relative Offsets
+  x = evt.clientX - (rect.left +5 )
+  y = evt.clientY - (rect.top +5)
+  updateContourSelection(x,y)
+  },false);
+
+
 var lastCnt; 
 var exporter = new THREE.STLExporter();
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, 200/200, 2, 1000 );
+var contours;
+var contourMap;
+var contourNumMap;
+var hierarchy;
 
 var renderer = new THREE.WebGLRenderer({ alpha: true });
 scene.background = new THREE.Color( 0xffffffff );
@@ -237,13 +252,23 @@ inputElement.addEventListener('change', (e) => {
 imgElement.onload = function() {
 let src = cv.imread(imgElement);
 let dst = cv.imread(imgElement);
+contourMap = cv.Mat.zeros(src.cols, src.rows, cv.CV_8UC3);
+contourNumMap = []
+contIndex = 1
+
 cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
-cv.threshold(src, src, 120, 200, cv.THRESH_BINARY);
+cv.adaptiveThreshold(src, src, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C , cv.THRESH_BINARY, 5, 1  );
 cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
 cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
 
-let contours = new cv.MatVector();
-let hierarchy = new cv.Mat();
+ if (contours) {
+  contours.delete();
+ } else {
+  contours = new cv.MatVector();
+ }
+
+
+hierarchy = new cv.Mat();
 // You can try more different parameters
 cv.findContours(src, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
 let largestContour =  0
@@ -261,6 +286,16 @@ for (let i = 0; i < contours.size(); ++i) {
       cw = false
       area = -area
     }
+
+    if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
+      cv.drawContours(dst, contours, i, new cv.Scalar(0,0,255,255), 1, cv.LINE_8, hierarchy, 100);
+      //Draw a line with the contour # so we can find it from clicks
+      cv.drawContours(contourMap, contours, i, new cv.Scalar(contIndex,0,255,255), 10, cv.LINE_8, hierarchy, 100);
+
+      contourNumMap.push(i)
+      contIndex++
+    }
+
     if (area < boundaryCountourAreaCutoff && area*1.0 > maxArea*1.0) {
         largestContour = i
         maxArea = area
@@ -269,6 +304,18 @@ for (let i = 0; i < contours.size(); ++i) {
     }
 
 }
+contIndex = 1
+  //Draw a Thin Contour Line to reduce over righting
+  for (let i = 0; i < contours.size(); ++i) {
+      
+    let cnt = contours.get(i);
+    let area = cv.contourArea(cnt, false);
+
+    if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
+      cv.drawContours(contourMap, contours, i, new cv.Scalar(contIndex,0,255,255), 2, cv.LINE_8, hierarchy, 100);
+      contIndex++
+    }
+  }
 
 
 cv.drawContours(dst, contours, largestContour, new cv.Scalar(255,0,0,255), 2, cv.LINE_8, hierarchy, 100);
@@ -277,10 +324,11 @@ let cnt = contours.get(largestContour);
 
 
 //Limit the Output Size
-let dsize = new cv.Size(300, 300);
+let dsize = new cv.Size(500, 500);
 cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
+cv.resize(contourMap, contourMap, dsize, 0, 0, cv.INTER_AREA);
 cv.imshow('canvasOutput', dst);
-src.delete(); dst.delete(); contours.delete(); hierarchy.delete();
+src.delete(); dst.delete(); 
 
 
 
@@ -289,6 +337,124 @@ generateSTL(cnt)
 animate();
 
 };
+
+
+function updateContourSelection(x, y) {
+
+  //Figure out if we clicked close enough to a countor
+  console.log(x)
+  console.log(y)
+
+  if (contourMap) {
+    co = contourMap.ucharPtr(x, y)[0];
+    console.log(co)
+    if (co != 0 ) 
+    { 
+      co = contourNumMap[co - 1]
+      console.log("Contour Clicked" + co)
+      let dst = cv.imread(imgElement);
+  
+      cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
+      cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
+      let boundaryCountourAreaCutoff = (dst.cols * dst.rows) * .90 // If an Area is 98% of the entire image is probably the bounday
+     
+      for (let i = 0; i < contours.size(); ++i) {
+      
+        let cnt = contours.get(i);
+        let area = cv.contourArea(cnt, true);
+        let cw = true
+        if (area < 0) {
+          cw = false
+          area = -area
+        }
+        if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
+          cv.drawContours(dst, contours, i, new cv.Scalar(0,0,255,255), 1, cv.LINE_8, hierarchy, 100);
+        }
+      }
+
+      cv.drawContours(dst, contours, co, new cv.Scalar(255,0,0,255), 2, cv.LINE_8, hierarchy, 100);
+      let cnt = contours.get(co);
+  
+      //Limit the Output Size
+      let dsize = new cv.Size(500, 500);
+      cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
+      cv.imshow('canvasOutput', dst);
+      dst.delete(); 
+      
+      lastCnt = cnt
+      generateSTL(cnt)
+      animate();
+
+    }
+  }
+  /*
+  let dst = cv.imread(imgElement);
+  
+  cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
+  cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
+  
+
+  let maxArea =  0.0
+  let clockwise = true
+  let boundaryCountourAreaCutoff = (src.cols * src.rows) * .90 // If an Area is 98% of the entire image is probably the bounday
+  
+  // find the biggest (reasonable Contour)
+  for (let i = 0; i < contours.size(); ++i) {
+      
+      let cnt = contours.get(i);
+      let area = cv.contourArea(cnt, true);
+      let cw = true
+      if (area < 0) {
+        cw = false
+        area = -area
+      }
+  
+      if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
+        cv.drawContours(dst, contours, i, new cv.Scalar(0,0,255,255), 1, cv.LINE_8, hierarchy, 100);
+        //Draw a line with the contour # so we can find it from clicks
+        cv.drawContours(contourMap, contours, i, new cv.Scalar(i,0,255,255), 10, cv.LINE_8, hierarchy, 100);
+      }
+  
+      if (area < boundaryCountourAreaCutoff && area*1.0 > maxArea*1.0) {
+          largestContour = i
+          maxArea = area
+          clockwise = cw
+          
+      }
+  
+  }
+  
+    //Draw a Thin Contour Line to reduce over righting
+    for (let i = 0; i < contours.size(); ++i) {
+        
+      let cnt = contours.get(i);
+      let area = cv.contourArea(cnt, false);
+  
+      if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
+        cv.drawContours(contourMap, contours, i, new cv.Scalar(i,0,255,255), 2, cv.LINE_8, hierarchy, 100);
+      }
+    }
+  
+  
+  cv.drawContours(dst, contours, largestContour, new cv.Scalar(255,0,0,255), 2, cv.LINE_8, hierarchy, 100);
+  
+  let cnt = contours.get(largestContour);
+  
+  
+  //Limit the Output Size
+  let dsize = new cv.Size(500, 500);
+  cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
+  cv.resize(contourMap, contourMap, dsize, 0, 0, cv.INTER_AREA);
+  cv.imshow('canvasOutput', dst);
+  src.delete(); dst.delete(); hierarchy.delete();
+  
+  
+  
+  lastCnt = cnt
+  generateSTL(cnt)
+  animate();
+  */
+  };
 
 
 
