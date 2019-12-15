@@ -263,6 +263,7 @@ cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
 
  if (contours) {
   contours.delete();
+  contours = new cv.MatVector();
  } else {
   contours = new cv.MatVector();
  }
