@@ -250,8 +250,15 @@ inputElement.addEventListener('change', (e) => {
 
 
 imgElement.onload = function() {
-let src = cv.imread(imgElement);
-let dst = cv.imread(imgElement);
+
+//Add Some Padding so images close to the edge still work
+let srcPre = cv.imread(imgElement);
+let src = new cv.Mat();
+// You can try more different parameters
+offset = 10
+cv.copyMakeBorder(srcPre, src, offset,offset,offset,offset, cv.BORDER_REPLICATE);
+
+let dst = src.clone()
 contourMap = cv.Mat.zeros(src.cols, src.rows, cv.CV_8UC3);
 contourNumMap = []
 contIndex = 1
@@ -353,8 +360,15 @@ function updateContourSelection(x, y) {
     { 
       co = contourNumMap[co - 1]
       console.log("Contour Clicked" + co)
-      let dst = cv.imread(imgElement);
+
+      //Add Some Padding so images close to the edge still work
+      let srcPre = cv.imread(imgElement);
+      let dst = new cv.Mat();
+      // You can try more different parameters
+      offset = 10
+      cv.copyMakeBorder(srcPre, dst, offset,offset,offset,offset, cv.BORDER_REPLICATE);
   
+
       cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
       cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
       let boundaryCountourAreaCutoff = (dst.cols * dst.rows) * .90 // If an Area is 98% of the entire image is probably the bounday
