@@ -38,6 +38,11 @@ if (width < 300) {
 }
 renderer.setSize( width, height);
 camera.position.z = 100;
+camera.position.x = 100;
+camera.position.y = -13.8;
+camera.rotation.z = 0.01;
+camera.rotation.x = .31;
+camera.rotation.y = -0.11;
 
 panel3d.appendChild( renderer.domElement );
 
@@ -76,6 +81,17 @@ function getThreeVector(cnt, scaleF)
         return cPoints;
 }
 
+function getGeoCenter(geo) {
+  var center = new THREE.Vector3();
+
+  geo.computeBoundingBox();
+
+  center.x = (geo.boundingBox.max.x + geo.boundingBox.min.x) / 2;
+  center.y = (geo.boundingBox.max.y + geo.boundingBox.min.y) / 2;
+  center.z = (geo.boundingBox.max.z + geo.boundingBox.min.z) / 2;
+
+  return center;
+}
 
 function getCookieSize() {
         return document.getElementById('cookieSize').value;
@@ -207,8 +223,8 @@ function getCookieSize() {
       outShape = getScaledOutlineShape(cnt, width, handleWidth, cookieSize)
       handleoutShape = getScaledOutlineShape(cnt, handleWidth, handleWidth, cookieSize)
 
-      var material =  new THREE.MeshStandardMaterial({color: 'red'}); 
-      material.color.set(0x000088);  
+      var material =  new THREE.MeshStandardMaterial({color: 'purple'}); 
+      material.color.set(0xAA22AA);  
 
 
       //Extrude the Cutter
@@ -233,10 +249,13 @@ function getCookieSize() {
 
       scene.add(new THREE.Mesh(geom, material));
 
-     var light = new THREE.PointLight( 0xffffff, 2, 200 );
+    var light = new THREE.PointLight( 0xffffff, 2, 200 );
     light.position.set( 50, 50, 50 );
     scene.add( light );
+    var light = new THREE.PointLight( 0xffffff, 2, 100 );
+    light.position.set( -50, -50, -50 );
 
+    camera.lookAt(getGeoCenter(geom))
     renderer.render( scene, camera );
     controls.update();  
   }
@@ -350,7 +369,7 @@ let dsize = new cv.Size(scale*dst.cols, scale*dst.rows);
 cv.resize(dst, dst, dsize, 0, 0, cv.INTER_LINEAR);
 cv.resize(contourMap, contourMap, dsize, 0, 0, cv.INTER_LINEAR);
 
-cv.imshow('canvasOutput', contourMap);
+cv.imshow('canvasOutput', dst);
 src.delete(); dst.delete(); 
 
 
@@ -365,8 +384,8 @@ animate();
 function updateContourSelection(x, y) {
 
   //Figure out if we clicked close enough to a countor
-  console.log(x)
-  console.log(y)
+  
+  console.log(camera)
 
   if (contourMap) {
     co = contourMap.ucharPtr(y, x)[0];
@@ -374,7 +393,6 @@ function updateContourSelection(x, y) {
     if (co != 0 ) 
     { 
       co = contourNumMap[co - 1]
-      console.log("Contour Clicked" + co)
 
       //Add Some Padding so images close to the edge still work
       let srcPre = cv.imread(imgElement);
