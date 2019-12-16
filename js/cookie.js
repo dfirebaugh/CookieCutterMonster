@@ -186,7 +186,7 @@ function getCookieSize() {
 
       var outShape = new THREE.Shape(outer);
       hole = new THREE.Path();
-      hole.fromPoints(inner);
+      hole.setFromPoints(inner);
       outShape.holes = [hole];
       return outShape
 
@@ -385,11 +385,9 @@ function updateContourSelection(x, y) {
 
   //Figure out if we clicked close enough to a countor
   
-  console.log(camera)
 
   if (contourMap) {
     co = contourMap.ucharPtr(y, x)[0];
-    console.log(co)
     if (co != 0 ) 
     { 
       co = contourNumMap[co - 1]
@@ -509,5 +507,7 @@ function updateContourSelection(x, y) {
 
 
 function onOpenCvReady() {
-  document.getElementById('status').hidden = true;
+  
+  //TODO Something here
+  //document.getElementById('status').hidden = true;
 }
