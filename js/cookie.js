@@ -12,12 +12,12 @@ document.getElementById('canvasOutput').addEventListener('click',function(evt){
   var celem = document.getElementById('canvasOutput')
   let rect = celem.getBoundingClientRect(); 
   //TODO Relative Offsets
-  x = evt.clientX - (rect.left +5 )
-  y = evt.clientY - (rect.top +5)
+  x = evt.clientX - (rect.left)
+  y = evt.clientY - (rect.top)
   updateContourSelection(x,y)
   },false);
 
-
+let maxdim = 500
 var lastCnt; 
 var exporter = new THREE.STLExporter();
 var scene = new THREE.Scene();
@@ -259,7 +259,7 @@ offset = 10
 cv.copyMakeBorder(srcPre, src, offset,offset,offset,offset, cv.BORDER_REPLICATE);
 
 let dst = src.clone()
-contourMap = cv.Mat.zeros(src.cols, src.rows, cv.CV_8UC3);
+contourMap = cv.Mat.zeros( src.rows, src.cols, cv.CV_8UC3);
 contourNumMap = []
 contIndex = 1
 
@@ -298,7 +298,7 @@ for (let i = 0; i < contours.size(); ++i) {
     if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
       cv.drawContours(dst, contours, i, new cv.Scalar(0,0,255,255), 1, cv.LINE_8, hierarchy, 100);
       //Draw a line with the contour # so we can find it from clicks
-      cv.drawContours(contourMap, contours, i, new cv.Scalar(contIndex,0,255,255), 10, cv.LINE_8, hierarchy, 100);
+      cv.drawContours(contourMap, contours, i, new cv.Scalar(contIndex,0,255,255), 30, cv.LINE_8, hierarchy, 100);
 
       contourNumMap.push(i)
       contIndex++
@@ -320,7 +320,20 @@ contIndex = 1
     let area = cv.contourArea(cnt, false);
 
     if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
-      cv.drawContours(contourMap, contours, i, new cv.Scalar(contIndex,0,255,255), 2, cv.LINE_8, hierarchy, 100);
+      cv.drawContours(contourMap, contours, i, new cv.Scalar(contIndex,0,255,255), 10, cv.LINE_8, hierarchy, 100);
+      contIndex++
+    }
+  }
+
+contIndex = 1
+  //Draw a Thin Contour Line to reduce over righting
+  for (let i = 0; i < contours.size(); ++i) {
+      
+    let cnt = contours.get(i);
+    let area = cv.contourArea(cnt, false);
+
+    if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
+      cv.drawContours(contourMap, contours, i, new cv.Scalar(contIndex,0,255,255), 3, cv.LINE_8, hierarchy, 100);
       contIndex++
     }
   }
@@ -332,10 +345,12 @@ let cnt = contours.get(largestContour);
 
 
 //Limit the Output Size
-let dsize = new cv.Size(500, 500);
-cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
-cv.resize(contourMap, contourMap, dsize, 0, 0, cv.INTER_AREA);
-cv.imshow('canvasOutput', dst);
+let scale = maxdim/Math.max(dst.cols, dst.rows)
+let dsize = new cv.Size(scale*dst.cols, scale*dst.rows);
+cv.resize(dst, dst, dsize, 0, 0, cv.INTER_LINEAR);
+cv.resize(contourMap, contourMap, dsize, 0, 0, cv.INTER_LINEAR);
+
+cv.imshow('canvasOutput', contourMap);
 src.delete(); dst.delete(); 
 
 
@@ -354,7 +369,7 @@ function updateContourSelection(x, y) {
   console.log(y)
 
   if (contourMap) {
-    co = contourMap.ucharPtr(x, y)[0];
+    co = contourMap.ucharPtr(y, x)[0];
     console.log(co)
     if (co != 0 ) 
     { 
@@ -391,8 +406,9 @@ function updateContourSelection(x, y) {
       let cnt = contours.get(co);
   
       //Limit the Output Size
-      let dsize = new cv.Size(500, 500);
-      cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
+      let scale = maxdim/Math.max(dst.cols, dst.rows)
+      let dsize = new cv.Size(scale*dst.cols, scale*dst.rows);
+      cv.resize(dst, dst, dsize, 0, 0, cv.INTER_LINEAR);
       cv.imshow('canvasOutput', dst);
       dst.delete(); 
       
@@ -458,6 +474,7 @@ function updateContourSelection(x, y) {
   
   //Limit the Output Size
   let dsize = new cv.Size(500, 500);
+  
   cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
   cv.resize(contourMap, contourMap, dsize, 0, 0, cv.INTER_AREA);
   cv.imshow('canvasOutput', dst);
