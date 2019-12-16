@@ -275,7 +275,7 @@ let srcPre = cv.imread(imgElement);
 let src = new cv.Mat();
 // You can try more different parameters
 offset = 10
-cv.copyMakeBorder(srcPre, src, offset,offset,offset,offset, cv.BORDER_REPLICATE);
+cv.copyMakeBorder(srcPre, src, offset,offset,offset,offset, cv.BORDER_WRAP);
 
 let dst = src.clone()
 contourMap = cv.Mat.zeros( src.rows, src.cols, cv.CV_8UC3);
