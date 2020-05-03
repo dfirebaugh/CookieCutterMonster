@@ -7,6 +7,9 @@ $("#cookieSize").slider({
   ticks_snap_bounds: 2
 });
 
+
+
+
 // Add A listner to the Canvas to Change Contours: 
 document.getElementById('canvasOutput').addEventListener('click',function(evt){
   var celem = document.getElementById('canvasOutput')
@@ -36,14 +39,17 @@ var height = 300
 if (width < 300) {
   height = width
 }
+
+
 renderer.setSize( width, height);
 camera.position.z = 100;
-camera.position.x = 100;
-camera.position.y = -13.8;
-camera.rotation.z = 0.01;
-camera.rotation.x = .31;
-camera.rotation.y = -0.11;
-
+camera.position.x = 50;
+camera.position.y = 50;
+camera.rotation.z = 0;
+camera.rotation.x = 0;
+camera.rotation.y = 0;
+camera.up.set( 0, 0, 1)
+camera.lookAt(new THREE.Vector3(50,0,50)); // Set look at coordinate like this
 panel3d.appendChild( renderer.domElement );
 
 var controls = new THREE.OrbitControls( camera, renderer.domElement );  
@@ -66,16 +72,26 @@ renderer.render( scene, camera );
 
       
 // Create a ThreeJS Vector from a OpenCV Contour
-function getThreeVector(cnt, scaleF)
+function getThreeVector(cnt, scaleF, tolerace)
     {
-
        var cPoints=[]
         scale = scaleF
-
+        lastX = -1000
+        lastY = -1000
         for (let i = 0; i < cnt.rows; i++) {
-            var a = new THREE.Vector2( cnt.data32S[i*2] * scale, cnt.data32S[i*2 + 1] * scale)
-            
-            cPoints.push(a);   
+          
+          //Since its unlikely the printer will printer in better than .2 percistion if we are withing .2 in both directions we wont add the point
+          //To save render size, we will make this adjustable
+          currentX = cnt.data32S[i*2] * scale
+          currentY = cnt.data32S[i*2 + 1] * scale
+          if (lastX + tolerace < currentX ||  lastX - tolerace > currentX  || lastY + tolerace < currentY ||  lastY - tolerace > currentY  )
+          {
+            var a = new THREE.Vector2( currentX, currentY)
+            cPoints.push(a); 
+            lastX = currentX
+            lastY = currentY
+
+          }  
         }
 
         return cPoints;
@@ -88,14 +104,28 @@ function getGeoCenter(geo) {
 
   center.x = (geo.boundingBox.max.x + geo.boundingBox.min.x) / 2;
   center.y = (geo.boundingBox.max.y + geo.boundingBox.min.y) / 2;
-  center.z = (geo.boundingBox.max.z + geo.boundingBox.min.z) / 2;
-
+  center.z = 0;
+  console.log(center)
   return center;
 }
 
 function getCookieSize() {
-        return document.getElementById('cookieSize').value;
+        return Number(document.getElementById('cookieSize').value);
   }
+
+  function getCookieTolerance() {
+    return Number(document.getElementById('cookieTolerance').value);
+    
+}
+
+function getCookieCutterThickness() {
+  return Number(document.getElementById('cookieCutterThickness').value); 
+}
+
+function getCookieCutterDepth() {
+  return Number(document.getElementById('cookieCutterDepth').value); 
+}
+
 
   //https://stackoverflow.com/questions/609530/download-textarea-contents-as-a-file-using-only-javascript-no-server-side
   function saveTextAsFile()
@@ -181,8 +211,9 @@ function getCookieSize() {
           }
       }
 
-      outer = getThreeVector(contours.get(largestContour),.1)
-      inner = getThreeVector(contours.get(otherContour),.1)
+      const tol = getCookieTolerance()
+      outer = getThreeVector(contours.get(largestContour),.1, tol)
+      inner = getThreeVector(contours.get(otherContour),.1, tol)
 
       var outShape = new THREE.Shape(outer);
       hole = new THREE.Path();
@@ -192,6 +223,9 @@ function getCookieSize() {
 
     }
 
+
+
+
   /**
    * Generate Cookie Cutter
    * @param pointsArray
@@ -199,19 +233,19 @@ function getCookieSize() {
     function generateSTL(cnt){
 
  
-      height = 15;
+      height = getCookieCutterDepth() ;
       handleWidth = 4.5;
       handleThickness = 2.2;
-      width = 1;
+      width = getCookieCutterThickness() ;
 
       var extrudeSettings = {
-          steps: 10,
+          steps: 1,
           depth: height,
           bevelEnabled: false,
       };
 
       var handleExtrudeSettings = {
-          steps: 10,
+          steps: 1,
           depth: handleThickness,
           bevelEnabled: false
       };
@@ -240,7 +274,7 @@ function getCookieSize() {
       var geom = new THREE.Geometry();
       geom.mergeMesh(cmesh);
       geom.mergeMesh(hmesh);
-      geom.mergeVertices(); // optional
+      geom.mergeVertices(.2)
 
       // Remove the Old Objects
       while(scene.children.length > 0){ 
@@ -255,7 +289,6 @@ function getCookieSize() {
     var light = new THREE.PointLight( 0xffffff, 2, 100 );
     light.position.set( -50, -50, -50 );
 
-    camera.lookAt(getGeoCenter(geom))
     renderer.render( scene, camera );
     controls.update();  
   }
