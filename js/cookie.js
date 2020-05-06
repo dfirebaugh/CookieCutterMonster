@@ -42,13 +42,13 @@ if (width < 300) {
 
 
 renderer.setSize( width, height);
+camera.up.set( 0, 0, 1)
 camera.position.z = 100;
-camera.position.x = 50;
+camera.position.x = 0;
 camera.position.y = 50;
 camera.rotation.z = 0;
 camera.rotation.x = 0;
 camera.rotation.y = 0;
-camera.up.set( 0, 0, 1)
 camera.lookAt(new THREE.Vector3(50,0,50)); // Set look at coordinate like this
 panel3d.appendChild( renderer.domElement );
 
