@@ -547,6 +547,14 @@ function updateContourSelection(x, y) {
 
 function onOpenCvReady() {
   
-  //TODO Something here
-  //document.getElementById('status').hidden = true;
+  console.log("Ready")
+  const urlParams = new URLSearchParams(window.location.search);
+  var imageUrl = urlParams.get('image')
+
+  console.log(imageUrl)
+  if (imageUrl.length > 0) {
+    imgElement.crossOrigin = "";
+    imgElement.src = imageUrl
+  }
+
 }
