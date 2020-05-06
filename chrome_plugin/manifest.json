@@ -1,0 +1,10 @@
+{
+"manifest_version": 2,
+    "background" : { "scripts": ["background.js"] },
+    "description": "A Plugin For Quickly Creating Cookie Cutters from Web Images",
+   "minimum_chrome_version": "6",
+   "name": "Cookie Cutter Monster",
+   "permissions": [ "contextMenus", "tabs", "http://*/*",
+ "https://*/*" ],
+   "version": "1.0"
+}
