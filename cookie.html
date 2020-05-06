@@ -14,8 +14,29 @@
     <link href="css/style.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/css/bootstrap-slider.min.css" rel="stylesheet">
 
+	<style>
+		#camera_debug {
+			display: none;
+			position: absolute;
+			left: 35em;
+			top: 1em;
+			padding: 1em;
+			background: rgba(0, 0, 0, 0.8);
+			color: white;
+			font-family: monospace;
+		}
+	</style>
+
   </head>
   <body>
+	<div id="camera_debug">
+		<div>x:<span id="x"></span></div>
+		<div>y:<span id="y"></span></div>
+		<div>z:<span id="z"></span></div>
+		<div>rx:<span id="rx"></span></div>
+		<div>ry:<span id="ry"></span></div>
+		<div>rz:<span id="rz"></span></div>
+	</div>
 
     <div class="container-fluid">
 	<div class="row">
@@ -54,7 +75,7 @@
           <div class="col-md-12">
 			<form role="form">
 				<div class="form-group">
-					 
+
             <div> <label for="cookieCutterSize">
 					Size
 					</label></div>
@@ -115,12 +136,12 @@
 	<script src="js/STLExporter.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/bootstrap-slider.min.js"></script>
   <script src="js/cookie.js"></script>
-  
+
 
 
 	<script async src="js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
-	
-	
-	
+
+
+
   </body>
 </html>

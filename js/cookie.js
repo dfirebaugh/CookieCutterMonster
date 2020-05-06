@@ -10,18 +10,20 @@ $("#cookieSize").slider({
 
 
 
-// Add A listner to the Canvas to Change Contours: 
+// Add A listner to the Canvas to Change Contours:
 document.getElementById('canvasOutput').addEventListener('click',function(evt){
   var celem = document.getElementById('canvasOutput')
-  let rect = celem.getBoundingClientRect(); 
+  let rect = celem.getBoundingClientRect();
   //TODO Relative Offsets
   x = evt.clientX - (rect.left)
   y = evt.clientY - (rect.top)
   updateContourSelection(x,y)
   },false);
 
+const CAMERA_DEBUG = false; /* if set to true, we will display some camera debug information */
+
 let maxdim = 500
-var lastCnt; 
+var lastCnt;
 var exporter = new THREE.STLExporter();
 var scene = new THREE.Scene();
 var camera = new THREE.PerspectiveCamera( 75, 200/200, 2, 1000 );
@@ -45,20 +47,41 @@ if (width < 300) {
 renderer.setSize( width, height);
 camera.up.set( 0, 0, 1)
 camera.position.z = 100;
-camera.position.x = 0;
-camera.position.y = 50;
-camera.rotation.z = 0;
+camera.position.x = 40;
+camera.position.y = 122;
+camera.rotation.z = -3;
 camera.rotation.x = 0;
 camera.rotation.y = 0;
 camera.lookAt(new THREE.Vector3(50,0,50)); // Set look at coordinate like this
 panel3d.appendChild( renderer.domElement );
 
-var controls = new THREE.OrbitControls( camera, renderer.domElement );  
+var controls = new THREE.OrbitControls( camera, renderer.domElement );
 
 
 var buttonExportASCII = document.getElementById( 'exportASCII' );
 buttonExportASCII.addEventListener( 'click', saveTextAsFile );
-        
+
+
+// at init time
+const xElem = document.querySelector("#x");
+const yElem = document.querySelector("#y");
+const zElem = document.querySelector("#z");
+const rxElem = document.querySelector("#rx");
+const ryElem = document.querySelector("#ry");
+const rzElem = document.querySelector("#rz");
+
+function camera_debug() {
+  if (CAMERA_DEBUG) {
+    document.querySelector("#camera_debug").style = "display:block";
+    xElem.textContent = camera.position.x.toFixed(3);
+    yElem.textContent = camera.position.y.toFixed(3);
+    zElem.textContent = camera.position.z.toFixed(3);
+    rxElem.textContent = camera.rotation.x.toFixed(3);
+    ryElem.textContent = camera.rotation.y.toFixed(3);
+    rzElem.textContent = camera.rotation.z.toFixed(3);
+  }
+}
+
 function animate() {
 
 requestAnimationFrame( animate );
@@ -68,10 +91,12 @@ controls.update();
 
 renderer.render( scene, camera );
 
+camera_debug(); // debug the camera if CAMERA_DEBUG = true
+
 }
 
 
-      
+
 // Create a ThreeJS Vector from a OpenCV Contour
 function getThreeVector(cnt, scaleF, tolerace)
     {
@@ -80,7 +105,7 @@ function getThreeVector(cnt, scaleF, tolerace)
         lastX = -1000
         lastY = -1000
         for (let i = 0; i < cnt.rows; i++) {
-          
+
           //Since its unlikely the printer will printer in better than .2 percistion if we are withing .2 in both directions we wont add the point
           //To save render size, we will make this adjustable
           currentX = cnt.data32S[i*2] * scale
@@ -88,11 +113,11 @@ function getThreeVector(cnt, scaleF, tolerace)
           if (lastX + tolerace < currentX ||  lastX - tolerace > currentX  || lastY + tolerace < currentY ||  lastY - tolerace > currentY  )
           {
             var a = new THREE.Vector2( currentX, currentY)
-            cPoints.push(a); 
+            cPoints.push(a);
             lastX = currentX
             lastY = currentY
 
-          }  
+          }
         }
 
         return cPoints;
@@ -116,15 +141,15 @@ function getCookieSize() {
 
   function getCookieTolerance() {
     return Number(document.getElementById('cookieTolerance').value);
-    
+
 }
 
 function getCookieCutterThickness() {
-  return Number(document.getElementById('cookieCutterThickness').value); 
+  return Number(document.getElementById('cookieCutterThickness').value);
 }
 
 function getCookieCutterDepth() {
-  return Number(document.getElementById('cookieCutterDepth').value); 
+  return Number(document.getElementById('cookieCutterDepth').value);
 }
 
 
@@ -136,7 +161,7 @@ function getCookieCutterDepth() {
       generateSTL(lastCnt)
       var textToWrite = exporter.parse( scene );
 
-    	var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'}); 
+    	var textFileAsBlob = new Blob([textToWrite], {type:'text/plain'});
     	var downloadLink = document.createElement("a");
     	downloadLink.download = fileNameToSaveAs;
     	downloadLink.innerHTML = "Download File";
@@ -155,7 +180,7 @@ function getCookieCutterDepth() {
     		downloadLink.style.display = "none";
     		document.body.appendChild(downloadLink);
     	}
-    
+
     	downloadLink.click();
     }
 
@@ -164,7 +189,7 @@ function getCookieCutterDepth() {
 
       let rect = cv.boundingRect(cnt);
       let maxCntDimension = Math.max(rect.width,rect.height);
-      
+
 
       let walloffset = Math.ceil((maxBoundaryOffetWidth+1)*12)
       //We Could do the math, but things run into trouble with overlaps, we can cheat
@@ -184,7 +209,7 @@ function getCookieCutterDepth() {
             cv.line(dst, new cv.Point(X1, Y1), new cv.Point(X2, Y2), new cv.Scalar(255, 255, 255), lineThickness)
         }
 
-        
+
       cv.threshold(dst, dst,  70, 255, cv.THRESH_BINARY_INV);
       cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
       cv.threshold(dst, dst, 120, 200, cv.THRESH_BINARY);
@@ -201,7 +226,7 @@ function getCookieCutterDepth() {
       let boundaryCountourAreaCutoff = (dst.cols * dst.rows) * .95 // If an Area is 95% of the entire image is probably the bounday
       // find the biggest (reasonable Contour)
       for (let i = 0; i < contours.size(); ++i) {
-          
+
           let ncnt = contours.get(i);
           let area = cv.contourArea(ncnt, false);
 
@@ -209,7 +234,7 @@ function getCookieCutterDepth() {
               otherContour = largestContour
               largestContour = i
               maxArea = area
-              
+
           }
       }
 
@@ -234,7 +259,7 @@ function getCookieCutterDepth() {
    */
     function generateSTL(cnt){
 
- 
+
       height = getCookieCutterDepth() ;
       handleWidth = 4.5;
       handleThickness = 2.2;
@@ -259,8 +284,8 @@ function getCookieCutterDepth() {
       outShape = getScaledOutlineShape(cnt, width, handleWidth, cookieSize)
       handleoutShape = getScaledOutlineShape(cnt, handleWidth, handleWidth, cookieSize)
 
-      var material =  new THREE.MeshStandardMaterial({color: 'purple'}); 
-      material.color.set(0xAA22AA);  
+      var material =  new THREE.MeshStandardMaterial({color: 'purple'});
+      material.color.set(0xAA22AA);
 
 
       //Extrude the Cutter
@@ -279,8 +304,8 @@ function getCookieCutterDepth() {
       geom.mergeVertices(.2)
 
       // Remove the Old Objects
-      while(scene.children.length > 0){ 
-          scene.remove(scene.children[0]); 
+      while(scene.children.length > 0){
+          scene.remove(scene.children[0]);
       }
 
       scene.add(new THREE.Mesh(geom, material));
@@ -292,7 +317,7 @@ function getCookieCutterDepth() {
     light.position.set( -50, -50, -50 );
 
     renderer.render( scene, camera );
-    controls.update();  
+    controls.update();
   }
 
 
@@ -344,7 +369,7 @@ let boundaryCountourAreaCutoff = (src.cols * src.rows) * .90 // If an Area is 98
 
 // find the biggest (reasonable Contour)
 for (let i = 0; i < contours.size(); ++i) {
-    
+
     let cnt = contours.get(i);
     let area = cv.contourArea(cnt, true);
     let cw = true
@@ -366,14 +391,14 @@ for (let i = 0; i < contours.size(); ++i) {
         largestContour = i
         maxArea = area
         clockwise = cw
-        
+
     }
 
 }
 contIndex = 1
   //Draw a Thin Contour Line to reduce over righting
   for (let i = 0; i < contours.size(); ++i) {
-      
+
     let cnt = contours.get(i);
     let area = cv.contourArea(cnt, false);
 
@@ -386,7 +411,7 @@ contIndex = 1
 contIndex = 1
   //Draw a Thin Contour Line to reduce over righting
   for (let i = 0; i < contours.size(); ++i) {
-      
+
     let cnt = contours.get(i);
     let area = cv.contourArea(cnt, false);
 
@@ -409,7 +434,7 @@ cv.resize(dst, dst, dsize, 0, 0, cv.INTER_LINEAR);
 cv.resize(contourMap, contourMap, dsize, 0, 0, cv.INTER_LINEAR);
 
 cv.imshow('canvasOutput', dst);
-src.delete(); dst.delete(); 
+src.delete(); dst.delete();
 
 
 
@@ -423,12 +448,12 @@ animate();
 function updateContourSelection(x, y) {
 
   //Figure out if we clicked close enough to a countor
-  
+
 
   if (contourMap) {
     co = contourMap.ucharPtr(y, x)[0];
-    if (co != 0 ) 
-    { 
+    if (co != 0 )
+    {
       co = contourNumMap[co - 1]
 
       //Add Some Padding so images close to the edge still work
@@ -437,14 +462,14 @@ function updateContourSelection(x, y) {
       // You can try more different parameters
       offset = 10
       cv.copyMakeBorder(srcPre, dst, offset,offset,offset,offset, cv.BORDER_REPLICATE);
-  
+
 
       cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
       cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
       let boundaryCountourAreaCutoff = (dst.cols * dst.rows) * .90 // If an Area is 98% of the entire image is probably the bounday
-     
+
       for (let i = 0; i < contours.size(); ++i) {
-      
+
         let cnt = contours.get(i);
         let area = cv.contourArea(cnt, true);
         let cw = true
@@ -459,14 +484,14 @@ function updateContourSelection(x, y) {
 
       cv.drawContours(dst, contours, co, new cv.Scalar(255,0,0,255), 2, cv.LINE_8, hierarchy, 100);
       let cnt = contours.get(co);
-  
+
       //Limit the Output Size
       let scale = maxdim/Math.max(dst.cols, dst.rows)
       let dsize = new cv.Size(scale*dst.cols, scale*dst.rows);
       cv.resize(dst, dst, dsize, 0, 0, cv.INTER_LINEAR);
       cv.imshow('canvasOutput', dst);
-      dst.delete(); 
-      
+      dst.delete();
+
       lastCnt = cnt
       generateSTL(cnt)
       animate();
@@ -475,18 +500,18 @@ function updateContourSelection(x, y) {
   }
   /*
   let dst = cv.imread(imgElement);
-  
+
   cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY, 0);
   cv.cvtColor(dst, dst, cv.COLOR_GRAY2RGBA, 0);
-  
+
 
   let maxArea =  0.0
   let clockwise = true
   let boundaryCountourAreaCutoff = (src.cols * src.rows) * .90 // If an Area is 98% of the entire image is probably the bounday
-  
+
   // find the biggest (reasonable Contour)
   for (let i = 0; i < contours.size(); ++i) {
-      
+
       let cnt = contours.get(i);
       let area = cv.contourArea(cnt, true);
       let cw = true
@@ -494,49 +519,49 @@ function updateContourSelection(x, y) {
         cw = false
         area = -area
       }
-  
+
       if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
         cv.drawContours(dst, contours, i, new cv.Scalar(0,0,255,255), 1, cv.LINE_8, hierarchy, 100);
         //Draw a line with the contour # so we can find it from clicks
         cv.drawContours(contourMap, contours, i, new cv.Scalar(i,0,255,255), 10, cv.LINE_8, hierarchy, 100);
       }
-  
+
       if (area < boundaryCountourAreaCutoff && area*1.0 > maxArea*1.0) {
           largestContour = i
           maxArea = area
           clockwise = cw
-          
+
       }
-  
+
   }
-  
+
     //Draw a Thin Contour Line to reduce over righting
     for (let i = 0; i < contours.size(); ++i) {
-        
+
       let cnt = contours.get(i);
       let area = cv.contourArea(cnt, false);
-  
+
       if (area > boundaryCountourAreaCutoff * .1 && area < boundaryCountourAreaCutoff) {
         cv.drawContours(contourMap, contours, i, new cv.Scalar(i,0,255,255), 2, cv.LINE_8, hierarchy, 100);
       }
     }
-  
-  
+
+
   cv.drawContours(dst, contours, largestContour, new cv.Scalar(255,0,0,255), 2, cv.LINE_8, hierarchy, 100);
-  
+
   let cnt = contours.get(largestContour);
-  
-  
+
+
   //Limit the Output Size
   let dsize = new cv.Size(500, 500);
-  
+
   cv.resize(dst, dst, dsize, 0, 0, cv.INTER_AREA);
   cv.resize(contourMap, contourMap, dsize, 0, 0, cv.INTER_AREA);
   cv.imshow('canvasOutput', dst);
   src.delete(); dst.delete(); hierarchy.delete();
-  
-  
-  
+
+
+
   lastCnt = cnt
   generateSTL(cnt)
   animate();
@@ -546,7 +571,7 @@ function updateContourSelection(x, y) {
 
 
 function onOpenCvReady() {
-  
+
   console.log("Ready")
   const urlParams = new URLSearchParams(window.location.search);
   var imageUrl = urlParams.get('image')
