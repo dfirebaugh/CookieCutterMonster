@@ -29,6 +29,7 @@ var contours;
 var contourMap;
 var contourNumMap;
 var hierarchy;
+var saveFilename = "cookie";
 
 var renderer = new THREE.WebGLRenderer({ alpha: true });
 scene.background = new THREE.Color( 0xffffffff );
@@ -130,7 +131,8 @@ function getCookieCutterDepth() {
   //https://stackoverflow.com/questions/609530/download-textarea-contents-as-a-file-using-only-javascript-no-server-side
   function saveTextAsFile()
     {
-      var fileNameToSaveAs = "cookie.stl"
+      var fileNameToSaveAs = saveFilename+".stl"
+      console.log(fileNameToSaveAs)
       generateSTL(lastCnt)
       var textToWrite = exporter.parse( scene );
 
@@ -296,8 +298,12 @@ function getCookieCutterDepth() {
 
 let imgElement = document.getElementById('imageSrc');
 let inputElement = document.getElementById('fileInput');
+
+
 inputElement.addEventListener('change', (e) => {
   imgElement.src = URL.createObjectURL(e.target.files[0]);
+  withExt = e.target.files[0].name
+  saveFilename = withExt.replace(/\.[^/.]+$/, "");
 }, false);
 
 
