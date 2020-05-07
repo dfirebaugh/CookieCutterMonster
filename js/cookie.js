@@ -572,14 +572,39 @@ function updateContourSelection(x, y) {
 
 function onOpenCvReady() {
 
-  console.log("Ready")
   const urlParams = new URLSearchParams(window.location.search);
   var imageUrl = urlParams.get('image')
+  
+    if (imageUrl.length > 0) {
+		
+		
+		if (imageUrl.toLowerCase().startsWith("http")) {
 
-  console.log(imageUrl)
-  if (imageUrl.length > 0) {
-    imgElement.crossOrigin = "";
-    imgElement.src = imageUrl
+			  var xhr = new XMLHttpRequest();
+				xhr.responseType = 'blob'; //so you can access the response like a normal URL
+				xhr.onreadystatechange = function () {
+					if (xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+						imgElement.src  = URL.createObjectURL(xhr.response); //create <img> with src set to the blob
+					} else {
+						var xhr2 = new XMLHttpRequest();
+						xhr2.responseType = 'blob'; //so you can access the response like a normal URL
+						xhr2.onreadystatechange = function () {
+							if (xhr2.readyState == XMLHttpRequest.DONE && xhr2.status == 200) {
+								imgElement.src  = URL.createObjectURL(xhr2.response); //create <img> with src set to the blob
+							}
+						};
+						xhr2.open('GET', "https://cors-anywhere.herokuapp.com/"+imageUrl, true);
+						xhr2.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+						xhr2.send();
+					} 
+				};
+				xhr.open('GET', imageUrl, true);
+				xhr.send();
+		} else {
+		  mgElement.src = imageUrl
+		}
   }
+  
+
 
 }
