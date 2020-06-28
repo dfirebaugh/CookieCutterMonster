@@ -5,14 +5,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Cookie Cutter Monster</title>
+    <title>Easy Cookie Cutter Creator</title>
 
     <meta name="description" content="Generating Cookie Cutter STL files for 3D printing">
     <meta name="author" content="SchreiverJ">
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/css/bootstrap-slider.min.css" rel="stylesheet">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <link href="css/style.css" rel="stylesheet">
 
 	<style>
 		#camera_debug {
@@ -41,9 +43,6 @@
     <div class="container-fluid">
 	<div class="row">
 		<div class="col-md-12">
-			<h3>
-				Cookie Cutter Monster
-      </h3>
       <p>Generate cookie cutters from images to 3d print!</p>
 		</div>
 	</div>
@@ -57,11 +56,11 @@
       <p>
           Try using a cartoon or clipart with a uniform background
       </p>
-    <div><input type="file" id="fileInput" name="file" /></div>
+    <div><input type="file" id="fileInput" name="file" class="btn btn-primary"/></div>
   </div>
 		 <canvas id="canvasOutput" ></canvas>
 		</div>
-		<div class="col-md-4">
+		<div class="col-md-4 float-md-left">
 			<div class="row">
 				<div class="col-md-12">
               <h5>
@@ -128,8 +127,6 @@
 	</div>
 </div>
 
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
     <script src="js/scripts.js"></script>
 	<script src="js/three.min.js"></script>
 	<script src="js/OrbitControls.js"></script>
@@ -140,7 +137,6 @@
 
 
 	<script async src="js/opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
-
 
 
   </body>

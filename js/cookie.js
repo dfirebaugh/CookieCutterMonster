@@ -575,7 +575,7 @@ function onOpenCvReady() {
   const urlParams = new URLSearchParams(window.location.search);
   var imageUrl = urlParams.get('image')
   
-    if (imageUrl.length > 0) {
+    if (imageUrl != null && imageUrl.length > 0) {
 		
 		
 		if (imageUrl.toLowerCase().startsWith("http")) {

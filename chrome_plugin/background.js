@@ -8,14 +8,12 @@ function getClickHandler() {
 
     // The srcUrl property is only available for image elements.
 
-var url = "https://schreiverj.github.io/CookieCutterMonster/cookie.html?image=" + info.srcUrl;
+var url = "http://www.easycookiecutter.com/?image=" + info.srcUrl;
 
     // Create a new tabto the info page.
-
-chrome.tabs.create({ url: url, });
+	chrome.tabs.create({ url: url, });
   };
 };
-
 
 
 /**

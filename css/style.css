@@ -1,1 +1,37 @@
 # Empty CSS file for your own CSS
+
+
+
+
+#bg {
+	
+ height: 100%;
+ background-position: center;
+ background-image: url("images/background.png");
+ background-size: cover;
+ background-repeat: no-repeat;
+}
+
+.navbar, #first-jumbo  {
+  background: transparent !important;
+}
+
+.slider-track {
+background-image: linear-gradient(to bottom,#7fbdff 0,#7fbdff 100%)
+background-color: #7fbdff
+}
+
+
+.slider-handle {
+
+background-color: #123C69;
+background-image: linear-gradient(to bottom,#123C69 0,#144273 100%);
+
+}
+
+.btn {
+
+background-color: #123C69;
+
+}
+

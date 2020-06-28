@@ -7,7 +7,7 @@
         },
 		
    "minimum_chrome_version": "6",
-   "name": "Cookie Cutter Monster",
+   "name": "Easy Cookie Cutter",
    "permissions": [ "contextMenus", "tabs", "http://*/*",
  "https://*/*" ],
    "version": "0.1"
