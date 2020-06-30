@@ -1,7 +1,10 @@
 # Empty CSS file for your own CSS
 
 
-
+body {
+    background-image: url(../images/background.png);
+    background-color: #fff2f2;
+}
 
 #bg {
 	
