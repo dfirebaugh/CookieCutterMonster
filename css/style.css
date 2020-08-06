@@ -9,6 +9,7 @@ body {
     flex-wrap: wrap;
     margin-top: 2vh;
     margin-bottom: 2vh;
+    align-items: center;
 }
 
 .canvasContainer * {
@@ -31,5 +32,5 @@ body {
     /* border: blue solid 2px; */
     width:100vw;
     min-width: 300px;
-    max-width: 30vw;
+    max-width: 20vw;
 }
