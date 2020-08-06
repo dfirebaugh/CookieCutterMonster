@@ -21,7 +21,6 @@ class CookieSize extends LitElement {
     this.currentIndex = e.target.value;
     this.currentValue = this.values[e.target.value];
 
-    console.log(this.currentIndex, this.currentValue);
     this.requestUpdate();
   }
 

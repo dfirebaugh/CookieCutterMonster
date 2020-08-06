@@ -1,11 +1,6 @@
 import { LitElement, html, css } from "lit-element";
 
 /**
- * DEBUG - Bool -- should we render the debugger or not?
- */
-const DEBUG = false;
-
-/**
  * CameraDebug
  * 
  * displays some cartesian coordinates to help us figure out what teh camer is doing
@@ -38,7 +33,7 @@ class CameraDebug extends LitElement {
   }
 
   render() {
-    if (!DEBUG) return;
+    if (!CAMERA_DEBUG) return;
 
     return html`
       <div id="camera_debug">

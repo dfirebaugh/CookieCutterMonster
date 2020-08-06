@@ -1,4 +1,3 @@
-
 // Add A listner to the Canvas to Change Contours:
 document.getElementById('canvasOutput').addEventListener('click',function(evt){
   var celem = document.getElementById('canvasOutput')
@@ -8,8 +7,6 @@ document.getElementById('canvasOutput').addEventListener('click',function(evt){
   y = evt.clientY - (rect.top)
   updateContourSelection(x,y)
   },false);
-
-const CAMERA_DEBUG = false; /* if set to true, we will display some camera debug information */
 
 let maxdim = 500
 var lastCnt;
@@ -120,16 +117,16 @@ function getCookieSize() {
   }
 
   function getCookieTolerance() {
-    return Number(document.getElementById('cookieTolerance').value);
+    return Number(document.getElementById('cookie-inputs').tolerance);
 
 }
 
 function getCookieCutterThickness() {
-  return Number(document.getElementById('cookieCutterThickness').value);
+  return Number(document.getElementById('cookie-inputs').thickness);
 }
 
 function getCookieCutterDepth() {
-  return Number(document.getElementById('cookieCutterDepth').value);
+  return Number(document.getElementById('cookie-inputs').depth);
 }
 
 
@@ -302,28 +299,12 @@ function getCookieCutterDepth() {
 
 
 let imgElement = document.getElementById('imageSrc');
-let inputElement = document.getElementById('fileInput');
 const imgSelector = document.querySelector("clipart-selector")
 
 function updateImg(){
   imgElement.src = imgSelector.imageSrc;
   saveFilename = imgSelector.saveFilename;
-  console.log("change: ", saveFilename, imgSelector.imageSrc)
-
 }
-
-imgSelector.addEventListener('change', e => {
-}, false)
-
-
-// inputElement.addEventListener('change', (e) => {
-//   imgElement.src = URL.createObjectURL(e.target.files[0]);
-//   withExt = e.target.files[0].name
-//   saveFilename = withExt.replace(/\.[^/.]+$/, "");
-//   console.log('changed')
-// }, false);
-
-
 imgElement.onload = function() {
 
 //Add Some Padding so images close to the edge still work
@@ -598,7 +579,4 @@ function onOpenCvReady() {
 		  mgElement.src = imageUrl
 		}
   }
-  
-
-
 }

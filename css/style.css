@@ -1,1 +1,25 @@
 /* for any global styling */
+
+body {
+    background-color: aliceblue;
+}
+
+.canvasContainer {
+    display: flex;
+}
+
+.canvasContainer canvas {
+    /* border: red solid; */
+    box-shadow: 2px 2px 39px -14px;
+}
+
+#threeoutput {
+    /* border: blue solid 2px; */
+    width:100vw;
+}
+
+#canvasOutput {
+    /* border: blue solid 2px; */
+    width:100vw;
+    min-width: 300px;
+}

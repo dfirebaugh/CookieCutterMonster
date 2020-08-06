@@ -1,6 +1,5 @@
 import {LitElement, html, css} from 'lit-element';
 
-console.log('loading clipart selector')
 class ClipartSelector extends LitElement {
 
   constructor() {
