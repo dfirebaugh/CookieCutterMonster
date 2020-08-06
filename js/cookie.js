@@ -1,15 +1,4 @@
 
-
-$("#cookieSize").slider({
-  value: 76,
-  ticks: [51, 64, 76, 89, 101],
-  ticks_labels: ['2in', '2.5in', '3in', '3.5in', '4in'],
-  ticks_snap_bounds: 2
-});
-
-
-
-
 // Add A listner to the Canvas to Change Contours:
 document.getElementById('canvasOutput').addEventListener('click',function(evt){
   var celem = document.getElementById('canvasOutput')
@@ -61,26 +50,17 @@ var controls = new THREE.OrbitControls( camera, renderer.domElement );
 var buttonExportASCII = document.getElementById( 'exportASCII' );
 buttonExportASCII.addEventListener( 'click', saveTextAsFile );
 
-
-// at init time
-const xElem = document.querySelector("#x");
-const yElem = document.querySelector("#y");
-const zElem = document.querySelector("#z");
-const rxElem = document.querySelector("#rx");
-const ryElem = document.querySelector("#ry");
-const rzElem = document.querySelector("#rz");
+const cameraDebugElem = document.querySelector("#cameraDebug");
 
 function camera_debug() {
-  if (CAMERA_DEBUG) {
-    document.querySelector("#camera_debug").style = "display:block";
-    xElem.textContent = camera.position.x.toFixed(3);
-    yElem.textContent = camera.position.y.toFixed(3);
-    zElem.textContent = camera.position.z.toFixed(3);
-    rxElem.textContent = camera.rotation.x.toFixed(3);
-    ryElem.textContent = camera.rotation.y.toFixed(3);
-    rzElem.textContent = camera.rotation.z.toFixed(3);
-  }
+    cameraDebugElem.x = camera.position.x.toFixed(3);
+    cameraDebugElem.y = camera.position.y.toFixed(3);
+    cameraDebugElem.z = camera.position.z.toFixed(3);
+    cameraDebugElem.rx = camera.rotation.x.toFixed(3);
+    cameraDebugElem.ry = camera.rotation.y.toFixed(3);
+    cameraDebugElem.rz = camera.rotation.z.toFixed(3);
 }
+
 
 function animate() {
 
@@ -136,7 +116,7 @@ function getGeoCenter(geo) {
 }
 
 function getCookieSize() {
-        return Number(document.getElementById('cookieSize').value);
+        return Number(document.querySelector('cookie-size').currentValue);
   }
 
   function getCookieTolerance() {
@@ -323,13 +303,25 @@ function getCookieCutterDepth() {
 
 let imgElement = document.getElementById('imageSrc');
 let inputElement = document.getElementById('fileInput');
+const imgSelector = document.querySelector("clipart-selector")
+
+function updateImg(){
+  imgElement.src = imgSelector.imageSrc;
+  saveFilename = imgSelector.saveFilename;
+  console.log("change: ", saveFilename, imgSelector.imageSrc)
+
+}
+
+imgSelector.addEventListener('change', e => {
+}, false)
 
 
-inputElement.addEventListener('change', (e) => {
-  imgElement.src = URL.createObjectURL(e.target.files[0]);
-  withExt = e.target.files[0].name
-  saveFilename = withExt.replace(/\.[^/.]+$/, "");
-}, false);
+// inputElement.addEventListener('change', (e) => {
+//   imgElement.src = URL.createObjectURL(e.target.files[0]);
+//   withExt = e.target.files[0].name
+//   saveFilename = withExt.replace(/\.[^/.]+$/, "");
+//   console.log('changed')
+// }, false);
 
 
 imgElement.onload = function() {
@@ -574,6 +566,8 @@ function onOpenCvReady() {
 
   const urlParams = new URLSearchParams(window.location.search);
   var imageUrl = urlParams.get('image')
+
+  if (!imageUrl) return;
   
     if (imageUrl.length > 0) {
 		
