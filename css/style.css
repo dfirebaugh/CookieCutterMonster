@@ -1,1 +1,36 @@
-# Empty CSS file for your own CSS
+/* for any global styling */
+
+body {
+    background-color: aliceblue;
+}
+
+.canvasContainer {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 2vh;
+    margin-bottom: 2vh;
+    align-items: center;
+}
+
+.canvasContainer * {
+    margin-left: 1vw;
+    margin-right: 1vw;
+}
+
+.canvasContainer canvas {
+    /* border: red solid; */
+    box-shadow: 2px 2px 39px -14px;
+}
+
+#threeoutput {
+    /* border: blue solid 2px; */
+    /* width:100vw; */
+    min-width: 400px;
+}
+
+#canvasOutput {
+    /* border: blue solid 2px; */
+    width:100vw;
+    min-width: 300px;
+    max-width: 20vw;
+}
