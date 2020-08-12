@@ -1,3 +1,4 @@
+
 // Add A listner to the Canvas to Change Contours:
 document.getElementById('canvasOutput').addEventListener('click',function(evt){
   var celem = document.getElementById('canvasOutput')
@@ -238,27 +239,43 @@ function getCookieCutterDepth() {
 
 
       height = getCookieCutterDepth() ;
-      handleWidth = 4.5;
-      handleThickness = 2.2;
+      handleWidth = 3.8;
+      handleThickness = 1.6;
       width = getCookieCutterThickness() ;
 
       var extrudeSettings = {
           steps: 1,
-          depth: height,
-          bevelEnabled: false,
+          depth: height/3,
+          bevelEnabled: true,
+          bevelThickness: height/2,
+          bevelSize: width/3,
+          bevelOffset: 0,
+          bevelSegments: 1
       };
+
+      var extrudeSettings2 = {
+        steps: 1,
+        depth: height/2,
+        bevelEnabled: false,
+    };
+
 
       var handleExtrudeSettings = {
           steps: 1,
           depth: handleThickness,
-          bevelEnabled: false
+          bevelEnabled: true,
+          bevelThickness: .4,
+          bevelSize: .4,
+          bevelOffset: 0,
+          bevelSegments: 5
       };
 
 
       cookieSize = getCookieSize()
 
       //Add some width to the contour to create a shape, and scale to the cookieSize
-      outShape = getScaledOutlineShape(cnt, width, handleWidth, cookieSize)
+      outShape = getScaledOutlineShape(cnt, width/4, handleWidth, cookieSize)
+      outShape2 = getScaledOutlineShape(cnt, width, handleWidth, cookieSize)
       handleoutShape = getScaledOutlineShape(cnt, handleWidth, handleWidth, cookieSize)
 
       var material =  new THREE.MeshStandardMaterial({color: 'purple'});
@@ -267,8 +284,13 @@ function getCookieCutterDepth() {
 
       //Extrude the Cutter
       var cgeometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( outShape, extrudeSettings ));
+      cgeometry.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, height/2) );
       var cmesh = new THREE.Mesh( cgeometry, material ) ;
       cmesh.updateMatrix()
+
+      var c2geometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( outShape2, extrudeSettings2 ));
+      var c2mesh = new THREE.Mesh( c2geometry, material ) ;
+      c2mesh.updateMatrix()
 
        //Extrude the Handle
        var hgeometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( handleoutShape, handleExtrudeSettings ));
@@ -277,6 +299,7 @@ function getCookieCutterDepth() {
 
       var geom = new THREE.Geometry();
       geom.mergeMesh(cmesh);
+      geom.mergeMesh(c2mesh);
       geom.mergeMesh(hmesh);
       geom.mergeVertices(.2)
 
