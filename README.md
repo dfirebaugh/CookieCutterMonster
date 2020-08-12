@@ -2,4 +2,4 @@
 
 Try it here
 
-https://schreiverj.github.io/CookieCutterMonster/cookie.html
+http://www.easycookiecutter.com/
