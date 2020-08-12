@@ -576,7 +576,7 @@ function onOpenCvReady() {
 				xhr.open('GET', imageUrl, true);
 				xhr.send();
 		} else {
-		  mgElement.src = imageUrl
+		  imgElement.src = imageUrl
 		}
   }
 }
