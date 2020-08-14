@@ -6,6 +6,8 @@ class CookieInputs extends LitElement {
     this.addEventListener("change", this.handleThicknessChange);
     this.addEventListener("change", this.handleDepthChange);
     this.addEventListener("change", this.handleToleranceChange);
+    this.addEventListener("change", this.handleBevelChange);
+    this.addEventListener("change", this.handleRoundHandleChange);
   }
 
   static get styles() {
@@ -15,6 +17,8 @@ class CookieInputs extends LitElement {
   thickness = DEFAULT_THICKNESS;
   depth = DEFAULT_DEPTH;
   tolerance = DEFAULT_TOLERANCE;
+  cutterBevel = DEFAULT_BEVEL;
+  handleRound = DEFAULT_ROUND_HANDLE;
 
   handleThicknessChange(e) {
     this.thickness = e.target.value;
@@ -30,6 +34,18 @@ class CookieInputs extends LitElement {
 
   handleToleranceChange(e) {
     this.tolerance = e.target.value;
+
+    this.requestUpdate();
+  }
+
+  handleBevelChange(e) {
+    this.cutterBevel = e.target.value;
+
+    this.requestUpdate();
+  }
+
+  handleRoundHandleChange(e) {
+    this.handleRound = e.target.value;
 
     this.requestUpdate();
   }
@@ -75,6 +91,22 @@ class CookieInputs extends LitElement {
         <option value=".7">Low</option>
         <option value="2">Very Low</option>
       </select>
+
+
+      <div>
+        <label for="cutterBevel">
+          Beveled Cutter
+        </label>
+      </div>
+      <input type="checkbox" @change="${this.handleBevelChange}" id="cutterBevel"></input>
+
+      <div>
+        <label for="handleRound">
+          Round Handle Edges
+        </label>
+      </div>
+      <input type="checkbox" @change="${this.handleRoundHandleChange}" id="handleRound"></input>
+            
     `;
   }
 }
