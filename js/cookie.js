@@ -117,17 +117,9 @@ function getCookieSize() {
         return Number(document.querySelector('cookie-size').currentValue);
   }
 
-  function getCookieTolerance() {
-    return Number(document.getElementById('cookie-inputs').tolerance);
 
-}
-
-function getCookieCutterThickness() {
-  return Number(document.getElementById('cookie-inputs').thickness);
-}
-
-function getCookieCutterDepth() {
-  return Number(document.getElementById('cookie-inputs').depth);
+function getCookieProperties() {
+  return document.getElementById('cookie-inputs');
 }
 
 
@@ -163,7 +155,7 @@ function getCookieCutterDepth() {
     }
 
 
-    function getScaledOutlineShape(cnt, width, maxBoundaryOffetWidth, maxDesiredOut) {
+    function getScaledOutlineShape(cnt, width, maxBoundaryOffetWidth, maxDesiredOut, tol) {
 
       let rect = cv.boundingRect(cnt);
       let maxCntDimension = Math.max(rect.width,rect.height);
@@ -216,7 +208,6 @@ function getCookieCutterDepth() {
           }
       }
 
-      const tol = getCookieTolerance()
       outer = getThreeVector(contours.get(largestContour),.1, tol)
       inner = getThreeVector(contours.get(otherContour),.1, tol)
 
@@ -238,17 +229,24 @@ function getCookieCutterDepth() {
     function generateSTL(cnt){
 
 
-      height = getCookieCutterDepth() ;
-      handleWidth = 3.8;
-      handleThickness = 1.6;
-      width = getCookieCutterThickness() ;
+      cookieProps = getCookieProperties()
 
+      height = Number(cookieProps.depth);
+      handleWidth = 4.2;
+      handleThickness = 2;
+      width = Number(cookieProps.thickness);
+      tolerance = Number(cookieProps.tolerance);
+
+      bevelCutter = Boolean(cookieProps.cutterBevel);
+      handleRound = Boolean(cookieProps.handleRound);
+      console.log(bevelCutter)
+      console.log(handleRound)
       var extrudeSettings = {
           steps: 1,
-          depth: height/3,
+          depth: 0,
           bevelEnabled: true,
           bevelThickness: height/2,
-          bevelSize: width/3,
+          bevelSize: width/2,
           bevelOffset: 0,
           bevelSegments: 1
       };
@@ -257,15 +255,19 @@ function getCookieCutterDepth() {
         steps: 1,
         depth: height/2,
         bevelEnabled: false,
-    };
+      };
+
+      if (!bevelCutter) {
+        extrudeSettings2.depth = height
+      }
 
 
       var handleExtrudeSettings = {
           steps: 1,
           depth: handleThickness,
-          bevelEnabled: true,
-          bevelThickness: .4,
-          bevelSize: .4,
+          bevelEnabled: handleRound,
+          bevelThickness: .6,
+          bevelSize: .6,
           bevelOffset: 0,
           bevelSegments: 5
       };
@@ -274,34 +276,57 @@ function getCookieCutterDepth() {
       cookieSize = getCookieSize()
 
       //Add some width to the contour to create a shape, and scale to the cookieSize
-      outShape = getScaledOutlineShape(cnt, width/4, handleWidth, cookieSize)
-      outShape2 = getScaledOutlineShape(cnt, width, handleWidth, cookieSize)
-      handleoutShape = getScaledOutlineShape(cnt, handleWidth, handleWidth, cookieSize)
+
+
+      var outShape 
+      var outShape2 
+
+      
+      if (bevelCutter) { 
+        outShape = getScaledOutlineShape(cnt, width/2, handleWidth, cookieSize, tolerance)
+        outShape2 = getScaledOutlineShape(cnt, width*3/2, handleWidth, cookieSize, tolerance)
+      } else {
+        outShape = getScaledOutlineShape(cnt, width/2, handleWidth, cookieSize, tolerance)
+      }
+
+
+      handleoutShape = getScaledOutlineShape(cnt, handleWidth, handleWidth, cookieSize, tolerance)
 
       var material =  new THREE.MeshStandardMaterial({color: 'purple'});
       material.color.set(0xAA22AA);
-
+      
+      var geom = new THREE.Geometry();
 
       //Extrude the Cutter
-      var cgeometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( outShape, extrudeSettings ));
-      cgeometry.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, height/2) );
-      var cmesh = new THREE.Mesh( cgeometry, material ) ;
-      cmesh.updateMatrix()
+      if (bevelCutter) {
+        var cgeometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( outShape, extrudeSettings ));
+        cgeometry.applyMatrix( new THREE.Matrix4().makeTranslation(0, 0, height/2) );
+        var cmesh = new THREE.Mesh( cgeometry, material ) ;
+        cmesh.updateMatrix()
+  
+        var c2geometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( outShape2, extrudeSettings2 ));
+        var c2mesh = new THREE.Mesh( c2geometry, material ) ;
+        c2mesh.updateMatrix()
+      
+        geom.mergeMesh(cmesh);
+        geom.mergeMesh(c2mesh);
 
-      var c2geometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( outShape2, extrudeSettings2 ));
-      var c2mesh = new THREE.Mesh( c2geometry, material ) ;
-      c2mesh.updateMatrix()
-
+      } else {
+        var c2geometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( outShape, extrudeSettings2 ));
+        var c2mesh = new THREE.Mesh( c2geometry, material ) ;
+        c2mesh.updateMatrix()
+        
+        geom.mergeMesh(c2mesh);
+      }
+      
+      
        //Extrude the Handle
        var hgeometry = new THREE.Geometry().fromBufferGeometry(new THREE.ExtrudeBufferGeometry( handleoutShape, handleExtrudeSettings ));
        var hmesh = new THREE.Mesh( hgeometry, material ) ;
        hmesh.updateMatrix()
 
-      var geom = new THREE.Geometry();
-      geom.mergeMesh(cmesh);
-      geom.mergeMesh(c2mesh);
-      geom.mergeMesh(hmesh);
-      geom.mergeVertices(.2)
+        geom.mergeMesh(hmesh);
+        geom.mergeVertices(.2)
 
       // Remove the Old Objects
       while(scene.children.length > 0){
