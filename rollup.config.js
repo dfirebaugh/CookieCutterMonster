@@ -43,5 +43,6 @@ export default {
     filesize({
       showBrotliSize: true,
     })
-  ]
+  ],
+  watch: ['js', 'js/components']
 }

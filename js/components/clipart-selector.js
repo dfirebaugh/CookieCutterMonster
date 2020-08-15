@@ -8,11 +8,7 @@ class ClipartSelector extends LitElement {
   }
 
   static get styles() {
-    return css`
-    .border {
-      border: solid blue 4px;
-    }
-    `;
+    return css``;
   }
 
   handleImageChange(e) {
@@ -29,8 +25,6 @@ class ClipartSelector extends LitElement {
 
   render() {
     return html`
-    <h5> Select an image to get started! </h5>
-    <p> Try using a cartoon or clipart with a uniform background </p>
     <input @change="${this.handleImageChange}" type="file" id="fileInput" name="file" />
 
     <img slot="image" id="imageSrc" src="${this.imageSrc}" crossOrigin="" alt="No Image" hidden=true></img>
