@@ -13,10 +13,10 @@ class TitleCard extends LitElement {
 
   render() {
     return html`
-      <h3>
-        Cookie Cutter Monster
-      </h3>
-      <p>Generate cookie cutters from images to 3d print!</p>
+      <h2>
+        Easy Cookie Cutters
+      </h2>
+			<p> Try uploading a cartoon or clipart with a uniform background to easy create your own 3d modeled cookie cutter </p>
     `;
   }
 }
