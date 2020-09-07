@@ -1,114 +1,129 @@
 import { CookieState_t, HTMLInputEvent } from "../types";
-import { LitElement, html } from "lit-element";
-import CookieState from "../services/cookieState";
+import { LitElement, html, css } from "lit-element";
+
+enum ChangeType {
+  THICKNESS,
+  DEPTH,
+  FILE_SIZE,
+  IS_BEVELED,
+  HAS_ROUND_EDGES
+}
 
 class CookieInputs extends LitElement {
-  handleThicknessChange(e: HTMLInputEvent) {
+  static styles = css`
+    checkbox-container {
+      display: grid;
+      align-items: center;
+      grid-template-columns: auto auto;
+      justify-content: left;
+      margin-bottom: 1vh;
+    }
+
+    container {
+      display: grid;
+    }
+
+    select-container {
+      margin-bottom: 1vh;
+    }
+
+    mwc-select {
+      width: 100%;
+    }
+  `;
+  eventToParent(eventDetail: CookieState_t) {
+    const event = new CustomEvent("cookie-input-changed", {
+      detail: eventDetail
+    })
+
+    this.dispatchEvent(event)
+  }
+
+  handleChange(e: HTMLInputEvent, changeType: ChangeType) {
     if (!e || !e.target) {
       throw Error("error with thickness input")
     }
+    const stateUpdate: CookieState_t = <CookieState_t>{};
 
-    CookieState.update(<CookieState_t>{
-      thickness: Number(e.target.value)
-    })
-  }
-
-  handleDepthChange(e: HTMLInputEvent) {
-    if (!e || !e.target) {
-      throw Error("error with depth input")
+    switch (changeType) {
+      case ChangeType.THICKNESS:
+        stateUpdate.thickness = Number(e.target.value);
+        break;
+      case ChangeType.DEPTH:
+        stateUpdate.depth = Number(e.target.value);
+        break;
+      case ChangeType.FILE_SIZE:
+        stateUpdate.tolerance = Number(e.target.value);
+        break;
+      case ChangeType.IS_BEVELED:
+        stateUpdate.cutterBevel = Boolean(e.target.checked);
+        break;
+      case ChangeType.HAS_ROUND_EDGES:
+        stateUpdate.handleRound = Boolean(e.target.checked);
+        break;
     }
 
-    CookieState.update(<CookieState_t>{
-      depth: Number(e.target.value)
-    })
-  }
-
-  handleToleranceChange(e: HTMLInputEvent) {
-    if (!e || !e.target) {
-      throw Error("error with tolerance input")
-    }
-
-    CookieState.update(<CookieState_t>{
-      tolerance: Number(e.target.value)
-    })
-  }
-
-  handleBevelChange(e: HTMLInputEvent) {
-    if (!e || !e.target) {
-      throw Error("error with cutterBevel input")
-    }
-
-    CookieState.update(<CookieState_t>{
-      cutterBevel: Boolean(e.target.checked)
-    })
-  }
-
-  handleRoundHandleChange(e: HTMLInputEvent) {
-    if (!e || !e.target) {
-      throw Error("error with handleRound input")
-    }
-
-    CookieState.update(<CookieState_t>{
-      handleRound: Boolean(e.target.checked)
-    })
+    this.eventToParent(stateUpdate);
   }
 
   render() {
     return html`
-      <div>
-        <label for="cookieCutterThickness">
-          Thickness
-        </label>
-      </div>
-      <select
-        @change="${this.handleThicknessChange}"
-        id="cookieCutterThickness"
-      >
-        <option value=".7">Extra Thin (.7mm)</option>
-        <option value="1" selected="selected">Thin (1mm)</option>
-        <option value="1.3">Medium Thin (1.3mm)</option>
-        <option value="1.6">Thick (1.6mm)</option>
-        <option value="2">Very Thick (2mm) </option>
-      </select>
+    <container>
+      <select-container>
+        <mwc-select 
+          outlined 
+          id="dfsSelect" 
+          label="Thickness"
+          @change="${(e: HTMLInputEvent) => this.handleChange(e, ChangeType.THICKNESS)}">
+            <mwc-list-item value=".7">Extra Thin (.7mm)</mwc-list-item>
+            <mwc-list-item value="1" selected="selected">Thin (1mm)</mwc-list-item>
+            <mwc-list-item value="1.3">Medium Thin (1.3mm)</mwc-list-item>
+            <mwc-list-item value="1.6">Thick (1.6mm)</mwc-list-item>
+            <mwc-list-item value="2">Very Thick (2mm) </mwc-list-item>
+        </mwc-select>
+      </select-container>
 
-      <div>
-        <label for="cookieCutterDepth">
-          Depth
-        </label>
-      </div>
-      <select @change="${this.handleDepthChange}" id="cookieCutterDepth">
-        <option value="12">Shallow (12mm)</option>
-        <option value="16" selected="selected">Standard (16mm)</option>
-        <option value="20">Deep (20mm)</option>
-      </select>
+      <select-container>
+        <mwc-select 
+          outlined 
+          id="dfsSelect" 
+          label="Depth"
+          @change="${(e: HTMLInputEvent) => this.handleChange(e, ChangeType.DEPTH)}">
+            <mwc-list-item value="12">Shallow (12mm)</mwc-list-item>
+            <mwc-list-item value="16" selected="selected">Standard (16mm)</mwc-list-item>
+            <mwc-list-item value="20">Deep (20mm)</mwc-list-item>
+        </mwc-select>
+      </select-container>
 
-      <div>
-        <label for="cookieTolerance">
-          File Size
-        </label>
-      </div>
-      <select @change="${this.handleToleranceChange}" id="cookieTolerance">
-        <option value=".01">Very High</option>
-        <option value=".15" selected="selected">High</option>
-        <option value=".3">Medium</option>
-        <option value=".7">Low</option>
-        <option value="2">Very Low</option>
-      </select>
+      <select-container>
+        <mwc-select 
+          outlined 
+          id="dfsSelect" 
+          label="File Size"
+          @change="${(e: HTMLInputEvent) => this.handleChange(e, ChangeType.FILE_SIZE)}">
+            <mwc-list-item value=".01">Very High</mwc-list-item>
+            <mwc-list-item value=".15" selected="selected">High</mwc-list-item>
+            <mwc-list-item value=".3">Medium</mwc-list-item>
+            <mwc-list-item value=".7">Low</mwc-list-item>
+            <mwc-list-item value="2">Very Low</mwc-list-item>
+        </mwc-select>
+      </select-container>
 
-
-      <div>
+      <checkbox-container>
+        <mwc-checkbox id="cutterBevel" @change=${(e: HTMLInputEvent) => this.handleChange(e, ChangeType.IS_BEVELED)}></mwc-checkbox>
         <label for="cutterBevel">
           Beveled Cutter
         </label>
-      </div>
-      <input type="checkbox" @change="${this.handleBevelChange}" id="cutterBevel"></input>
+      </checkbox-container>
 
-      <div>
+      <checkbox-container>
+        <mwc-checkbox @change="${(e: HTMLInputEvent) => this.handleChange(e, ChangeType.HAS_ROUND_EDGES)}" id="handleRound"></mwc-checkbox>
         <label for="handleRound">
           Round Handle Edges
         </label>
-      </div>
-      <input type="checkbox" @change="${this.handleRoundHandleChange}" id="handleRound"></input>
+      </checkbox-container>
+    </container>
+
     `;
   }
 }

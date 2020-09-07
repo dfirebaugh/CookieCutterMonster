@@ -1,4 +1,12 @@
-import { CookieState_t } from "../types"
+import { CookieState_t, camera_pos_t } from "../types"
+import {
+    DEFAULT_THICKNESS,
+    DEFAULT_DEPTH,
+    DEFAULT_TOLERANCE,
+    DEFAULT_BEVEL,
+    DEFAULT_ROUND_HANDLE,
+    DEFAULT_SIZE
+} from "../constants";
 
 /**
  * CookieState is a place where we can share some state between our modules
@@ -12,7 +20,15 @@ class CookieState {
         tolerance: DEFAULT_TOLERANCE,
         cutterBevel: DEFAULT_BEVEL,
         handleRound: DEFAULT_ROUND_HANDLE,
-        size: DEFAULT_SIZE
+        size: DEFAULT_SIZE,
+        camera_pos: <camera_pos_t>{
+            x: 0,
+            y: 0,
+            z: 0,
+            rx: 0,
+            ry: 0,
+            rz: 0
+        }
     };
 
     get(): CookieState_t {

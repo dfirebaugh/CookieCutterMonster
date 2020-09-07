@@ -1,6 +1,5 @@
 import { LitElement, html, css, property } from "lit-element";
-import "../constants";
-
+import { CAMERA_DEBUG } from "../constants";
 /**
  * CameraDebug
  * 
@@ -20,7 +19,7 @@ class CameraDebug extends LitElement {
       #camera_debug {
         position: absolute;
         left: 35em;
-        top: 1em;
+        top: 10em;
         padding: 1em;
         background: rgba(0, 0, 0, 0.8);
         color: white;
